@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme.dart';
 import '../../app/wording.dart';
 import '../../widgets/logo.dart';
 
@@ -9,7 +10,8 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    // Brand colours in both light and dark mode, to match the Android launch screen.
+    final scheme = brandScheme;
     final text = Theme.of(context).textTheme;
     return Scaffold(
       backgroundColor: scheme.primary,

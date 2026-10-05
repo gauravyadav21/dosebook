@@ -79,18 +79,19 @@ The Figma plan's call limit was reached before these could be drawn. They follow
 - Chat without feedback chips, with the medicine lookup card and the decline message (frames 10 and 11 are partly out of date)
 - Password show/hide on sign-in
 - Splash, the visitor view of each tab, and a separate Create account screen (S11). A script that draws these three frames and the logo sheet is saved in `docs/02-architecture/assets/figma-s11-frames.js`; the plan's call limit refused it on 5 Oct 2026. Run it once with `use_figma` when the limit resets, then move these lines into the frame table as 20 to 22.
+- Intro pages (S12): four pages with dots, Skip, Next and Get started; page 4 lists what the app never does. Appearance dialog (System, Light, Dark) in the account menu
 
 ## Logo
 An open book with a capsule above the fold: the user's own book of doses. White on the primary colour; the right half of the capsule is primaryContainer.
 
 - Source drawing: `docs/02-architecture/assets/dosebook-logo.svg` (108 x 108 grid; the mark sits inside the centre two thirds, the part an Android adaptive icon never crops).
-- In the app: `mobile/lib/widgets/logo.dart` (`AppLogo`, drawn in code from the theme colours, no image file).
+- In the app: `mobile/lib/widgets/logo.dart` (`AppLogo`, drawn in code, no image file). The logo and the splash use `brandScheme` (`mobile/lib/app/theme.dart`), the light scheme, in both light and dark mode, so the brand colour does not change with the theme.
 - Android launcher icon and launch screen: `mobile/android/app/src/main/res/drawable/ic_logo_foreground.xml`, `mipmap-anydpi-v26/ic_launcher.xml`, `drawable/launch_background.xml`, `values-v31/styles.xml`. The PNG icons in `mipmap-*` (for Android 7) were rendered from the SVG.
 - The same three files must change together if the logo changes.
 - Colour: the launch screen uses #515B92, the primary colour Flutter derives from the indigo seed (read from the running theme), so the Android launch screen and the Flutter splash match. The #4355B9 in the table above is the older hand-entered approximation used in the Figma file.
 - Not in Figma yet (see above). iOS icon not made.
 
 ## Not designed yet
-- Dark theme
+- Dark theme in Figma. The app has it (S12): both themes come from the same indigo seed in `mobile/lib/app/theme.dart`, so there are no separate dark values to maintain; no dark frames were drawn
 - Web (wide) layouts for the judge demo link
 - Notification appearance, loading skeletons, password reset

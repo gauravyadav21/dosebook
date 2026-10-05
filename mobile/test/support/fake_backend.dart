@@ -62,11 +62,14 @@ class RecordingReminders implements Reminders {
 }
 
 class TestApp {
-  TestApp(this.backend, {bool signedIn = true})
+  TestApp(this.backend, {bool signedIn = true, bool intro = false})
       : reminders = RecordingReminders(),
         api = Api(client: backend.client, baseUrl: 'http://test') {
     if (signedIn) api.token = 'test-token';
-    session = Session(api, reminders: reminders)..loading = false;
+    session = Session(api, reminders: reminders)
+      ..loading = false
+      // Most tests start past the intro pages (S12). As in Session.restore, a signed-in start never shows them.
+      ..introDone = !intro || signedIn;
     // A signed-in test user has already accepted the first-run acknowledgement.
     if (signedIn) {
       session.me = Me.fromJson({

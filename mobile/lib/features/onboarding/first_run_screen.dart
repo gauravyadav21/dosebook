@@ -20,11 +20,6 @@ class _FirstRunScreenState extends State<FirstRunScreen> {
     'Recalls medicines your own doctors prescribed you before',
     'Reminds you of doses exactly as written on your prescription',
   ];
-  static const _doesNot = [
-    'It does not diagnose',
-    'It does not prescribe or suggest new medicines',
-    'It does not change a dose or replace your doctor',
-  ];
 
   Future<void> _acknowledge() async {
     setState(() => _busy = true);
@@ -73,7 +68,7 @@ class _FirstRunScreenState extends State<FirstRunScreen> {
                       for (final line in _does) bullet(line, positive: true),
                       const SizedBox(height: 16),
                       Text('What this app does not do', style: text.titleMedium),
-                      for (final line in _doesNot) bullet(line, positive: false),
+                      for (final line in doesNotLines) bullet(line, positive: false),
                       const SizedBox(height: 16),
                       const InfoBanner(firstRunBanner),
                     ],

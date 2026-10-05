@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dosebook/api/models.dart';
 import 'package:dosebook/app/platform.dart';
+import 'package:dosebook/app/theme.dart';
 import 'package:dosebook/app/wording.dart';
 import 'package:dosebook/features/auth/sign_in_screen.dart';
 import 'package:dosebook/features/auth/sign_up_screen.dart';
 import 'package:dosebook/features/chat/chat_screen.dart';
 import 'package:dosebook/features/doctors/doctors_screen.dart';
+import 'package:dosebook/features/intro/intro_screen.dart';
 import 'package:dosebook/features/notes/notes_screen.dart';
 import 'package:dosebook/features/profile/profile_screen.dart';
 import 'package:dosebook/features/safety/feedback_screen.dart';
@@ -386,6 +388,171 @@ void main() {
       expect(find.text('Your doses for today'), findsOneWidget);
       expect(find.text('Your session ended. Sign in again.'), findsOneWidget);
       expect(app.reminders.clears, 1);
+    });
+  });
+
+  group('Intro pages and appearance (S12)', () {
+    Future<TestApp> pumpApp(WidgetTester tester, FakeBackend backend, {bool signedIn = false, bool intro = true}) async {
+      tester.view.physicalSize = const Size(412, 917);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final app = TestApp(backend, signedIn: signedIn, intro: intro);
+      await tester.pumpWidget(App(session: app.session));
+      await tester.pumpAndSettle();
+      return app;
+    }
+
+    Brightness brightness(WidgetTester tester) => Theme.of(tester.element(find.byType(Scaffold).first)).brightness;
+
+    testWidgets('shows the intro to a visitor at start, before the tabs, and sends no request', (tester) async {
+      final backend = FakeBackend();
+      await pumpApp(tester, backend);
+      expect(find.byType(IntroScreen), findsOneWidget);
+      expect(find.text('Your prescriptions in one timeline'), findsOneWidget);
+      expect(find.byType(NavigationBar), findsNothing);
+      expect(backend.requests, isEmpty);
+    });
+
+    testWidgets('walks the four pages in order and ends on what the app never does, in the fixed wording', (tester) async {
+      await pumpApp(tester, FakeBackend());
+      expect(find.text('Your prescriptions in one timeline'), findsOneWidget);
+      await tester.tap(find.widgetWithText(FilledButton, 'Next'));
+      await tester.pumpAndSettle();
+      expect(find.text('Reminders as written on your prescription'), findsOneWidget);
+      await tester.tap(find.widgetWithText(FilledButton, 'Next'));
+      await tester.pumpAndSettle();
+      expect(find.text('What worked for you'), findsOneWidget);
+      await tester.tap(find.widgetWithText(FilledButton, 'Next'));
+      await tester.pumpAndSettle();
+      expect(find.text('What DoseBook never does'), findsOneWidget);
+      for (final line in doesNotLines) {
+        expect(find.text(line), findsOneWidget);
+      }
+      expect(find.text(firstRunBanner), findsOneWidget);
+      expect(find.widgetWithText(FilledButton, 'Next'), findsNothing);
+      expect(find.text('Skip'), findsNothing);
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Get started'));
+      await tester.pumpAndSettle();
+      expect(find.byType(IntroScreen), findsNothing);
+      expect(find.text('Your doses for today'), findsOneWidget);
+    });
+
+    testWidgets('can be swiped from page to page', (tester) async {
+      await pumpApp(tester, FakeBackend());
+      await tester.drag(find.byType(PageView), const Offset(-350, 0));
+      await tester.pumpAndSettle();
+      expect(find.text('Reminders as written on your prescription'), findsOneWidget);
+    });
+
+    testWidgets('Skip goes straight to the visitor tabs and sends no request', (tester) async {
+      final backend = FakeBackend();
+      await pumpApp(tester, backend);
+      await tester.tap(find.text('Skip'));
+      await tester.pumpAndSettle();
+      expect(find.byType(IntroScreen), findsNothing);
+      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(backend.requests, isEmpty);
+    });
+
+    testWidgets('Sign in on the intro opens the sign-in screen over the visitor tabs', (tester) async {
+      await pumpApp(tester, FakeBackend());
+      await tester.tap(find.widgetWithText(TextButton, 'Sign in'));
+      await tester.pumpAndSettle();
+      expect(find.byType(SignInScreen), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.text('Your doses for today'), findsOneWidget);
+    });
+
+    testWidgets('is not shown to a signed-in user, nor again after Sign out in the same run', (tester) async {
+      final backend = FakeBackend()..on('GET /doses/today', (_) => {'date': '2026-10-04', 'doses': []});
+      await pumpApp(tester, backend, signedIn: true);
+      expect(find.byType(IntroScreen), findsNothing);
+      expect(find.text('No doses due today'), findsOneWidget);
+      await tester.tap(find.byTooltip('Account'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sign out'));
+      await tester.pumpAndSettle();
+      expect(find.byType(IntroScreen), findsNothing);
+      expect(find.text('Your doses for today'), findsOneWidget);
+    });
+
+    testWidgets('reopens from About DoseBook in the account menu and closes back to where the user was', (tester) async {
+      await pumpApp(tester, FakeBackend(), intro: false);
+      await tester.tap(find.byTooltip('Account'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('About DoseBook'));
+      await tester.pumpAndSettle();
+      expect(find.text('Your prescriptions in one timeline'), findsOneWidget);
+      await tester.tap(find.text('Skip'));
+      await tester.pumpAndSettle();
+      expect(find.byType(IntroScreen), findsNothing);
+      expect(find.text('Your doses for today'), findsOneWidget);
+    });
+
+    testWidgets('follows the phone when no appearance was chosen', (tester) async {
+      tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+      addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+      final app = await pumpApp(tester, FakeBackend(), intro: false);
+      expect(app.session.themeMode, ThemeMode.system);
+      expect(brightness(tester), Brightness.dark);
+    });
+
+    testWidgets('switches to dark from Appearance at once, marks the choice and saves it on the phone', (tester) async {
+      final app = await pumpApp(tester, FakeBackend(), intro: false);
+      expect(brightness(tester), Brightness.light);
+      await tester.tap(find.byTooltip('Account'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Appearance'));
+      await tester.pumpAndSettle();
+      expect(find.text('System'), findsOneWidget);
+      expect(find.text('Light'), findsOneWidget);
+      await tester.tap(find.text('Dark'));
+      await tester.pumpAndSettle();
+
+      expect(app.session.themeMode, ThemeMode.dark);
+      expect(brightness(tester), Brightness.dark);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('theme_mode'), 'dark');
+      // No server call: the choice belongs to the phone.
+      expect(app.backend.requests, isEmpty);
+    });
+
+    testWidgets('restores a saved appearance at start-up', (tester) async {
+      SharedPreferences.setMockInitialValues({'theme_mode': 'dark'});
+      final app = TestApp(FakeBackend(), signedIn: false)..session.loading = true;
+      await tester.pumpWidget(App(session: app.session));
+      await tester.runAsync(app.session.restore);
+      await tester.pumpAndSettle();
+      expect(app.session.themeMode, ThemeMode.dark);
+      expect(brightness(tester), Brightness.dark);
+    });
+
+    testWidgets('keeps the brand colour on the splash in dark mode', (tester) async {
+      final app = TestApp(FakeBackend(), signedIn: false)
+        ..session.loading = true
+        ..session.themeMode = ThemeMode.dark;
+      await tester.pumpWidget(App(session: app.session));
+      await tester.pump();
+      expect(tester.widget<Scaffold>(find.byType(Scaffold)).backgroundColor, brandScheme.primary);
+    });
+
+    testWidgets('shows a visitor tab, sign-in and the intro in dark mode at phone width without overflow', (tester) async {
+      final app = await pumpApp(tester, FakeBackend());
+      await app.session.setThemeMode(ThemeMode.dark);
+      await tester.pumpAndSettle();
+      expect(brightness(tester), Brightness.dark);
+      for (var i = 0; i < 3; i++) {
+        await tester.tap(find.widgetWithText(FilledButton, 'Next'));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(find.widgetWithText(FilledButton, 'Get started'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+      await tester.pumpAndSettle();
+      expect(find.byType(SignInScreen), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   });
 

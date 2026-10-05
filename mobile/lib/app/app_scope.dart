@@ -22,12 +22,32 @@ class Session extends ChangeNotifier {
   }
 
   static const _tokenKey = 'session_token';
+  static const _themeKey = 'theme_mode';
 
   final Api api;
   final Reminders reminders;
 
   Me? me;
   bool loading = true;
+
+  /// Light, dark, or follow the phone (S12). Kept on the phone, not in the account.
+  ThemeMode themeMode = ThemeMode.system;
+
+  /// True once the intro pages were dismissed in this run of the app, or somebody signed in.
+  /// Not saved: the intro is shown on every start until sign-in (S12).
+  bool introDone = false;
+
+  Future<void> setThemeMode(ThemeMode mode) async {
+    themeMode = mode;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_themeKey, mode.name);
+  }
+
+  void finishIntro() {
+    introDone = true;
+    notifyListeners();
+  }
 
   bool get signedIn => api.token != null;
 
@@ -41,8 +61,16 @@ class Session extends ChangeNotifier {
   Future<void> restore({Duration minimum = Duration.zero}) async {
     final shown = Future<void>.delayed(minimum);
     final prefs = await SharedPreferences.getInstance();
+    // The appearance comes first, so the splash is already in the chosen mode.
+    final saved = prefs.getString(_themeKey);
+    final mode = ThemeMode.values.where((m) => m.name == saved).firstOrNull;
+    if (mode != null && mode != themeMode) {
+      themeMode = mode;
+      notifyListeners();
+    }
     api.token = prefs.getString(_tokenKey);
     if (api.token != null) {
+      introDone = true;
       try {
         me = await api.me();
       } on ApiException catch (e) {
@@ -61,6 +89,7 @@ class Session extends ChangeNotifier {
     await prefs.setString(_tokenKey, api.token!);
     me = await api.me();
     sessionEnded = false;
+    introDone = true;
     notifyListeners();
   }
 

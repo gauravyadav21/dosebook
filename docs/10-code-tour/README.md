@@ -62,7 +62,7 @@ Also: `backend/prisma/schema.prisma` (the tables), `backend/prisma/migrations/` 
 |---|---|
 | `main.dart` | Start-up, and `_Root`, which picks the splash, first run or the app (the app opens without sign-in; see tour 1) |
 | `api/` | `api.dart` (every server call) and `models.dart` (the data classes) |
-| `app/` | `app_scope.dart` (the session), `wording.dart` (fixed sentences), `format.dart` (dates, labels), `platform.dart` (file picker, dialler, share) |
+| `app/` | `app_scope.dart` (the session), `theme.dart` (light and dark theme, brand colours), `wording.dart` (fixed sentences), `format.dart` (dates, labels), `platform.dart` (file picker, dialler, share) |
 | `features/<area>/` | One folder per area; each file is one or two screens |
 | `reminders/` | `reminder_plan.dart` (pure planning) and `reminders.dart` (the notification plugin) |
 | `widgets/` | `logo.dart` (the logo, drawn in code), `common.dart` (`Loader`, banners, empty state) and `cards.dart` (medicine, dose, doctor, timeline cards) |

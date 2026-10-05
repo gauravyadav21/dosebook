@@ -7,7 +7,7 @@ Everything not done or not verified, in one list. Status on 4 Oct 2026. Update t
 2. **Human review of every diff.** Not done. Required by the roadmap and by `AGENTS.md`.
 3. **Review by a second model** (`review-diff` skill). Not done.
 4. **Check the tests against the stories.** The same agent wrote code and tests in one session, tests alongside rather than first.
-5. **Get CI green.** Pushed on 5 Oct 2026. `.gitlab-ci.yml` (secret scan, backend with a Postgres service, mobile with an APK build) was added on branch `ci/gitlab`; it reaches `main` only after its first pipeline is green. The AI agent cannot read the pipeline result (private project, no API token), so the participant checks it under Build → Pipelines. `.github/workflows/ci.yml` is kept for a possible GitHub mirror and does not run on GitLab.
+5. **Get CI green.** Pushed on 5 Oct 2026. `.gitlab-ci.yml` (secret scan, backend with a Postgres service, mobile with an APK build) was added on branch `ci/gitlab`; its first pipeline was green (seen by the participant) and it was merged to `main` the same night. The AI agent cannot read the pipeline result (private project, no API token), so the participant checks it under Build → Pipelines. `.github/workflows/ci.yml` is kept for a possible GitHub mirror and does not run on GitLab.
 
 ## To stand out (this project)
 From `docs/09-playbook/standing-out.md`. None of these is done yet.
@@ -38,7 +38,6 @@ From `docs/09-playbook/standing-out.md`. None of these is done yet.
 - Figma frames for the splash, visitor tab and Create account, and the logo sheet: script ready in `docs/02-architecture/assets/figma-s11-frames.js`, refused by the plan's call limit. iOS icon and launch screen not made.
 - Custom reminder times for the named slots (fixed at 8:00, 13:00, 18:00, 21:00).
 - PDF preview of the original document.
-- Dark theme.
 - Measurements log (future scope by decision).
 - Wider AI help in chat (future scope by decision).
 

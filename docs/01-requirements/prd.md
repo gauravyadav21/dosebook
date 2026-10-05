@@ -41,6 +41,9 @@ One user: an adult managing their own minor illnesses and health papers.
 ## Doctor vs app: stated repeatedly
 The app reminds the user of the difference between a doctor and itself at every point where it matters, not only in a footer. See [[what-we-do-and-dont]]. Touchpoints: first-run acknowledgement (once, must tap to continue), a persistent line in the chat screen, a short line on every chat answer, the extraction confirm screen ("check against your paper prescription"), own reminders, general medicine information, and every escalation message. Wording is short and consistent; no pop-up spam.
 
+## First open, intro and appearance
+The app opens without sign-in (S11). A visitor sees four intro pages on every start until they sign in; the last page states what the app never does, in the same fixed wording as the acknowledgement. The app follows the phone's light or dark mode, and the user can choose System, Light or Dark; the choice stays on the phone (S12).
+
 ## Scope limit
 The app only works from the user's own history and own notes. It does not do anything that needs a doctor's training or experience: no diagnosis or differential, no judging severity beyond fixed red-flag rules, no new medicines, no dose or course changes, no interaction or contraindication judgements (it says "ask your doctor or pharmacist"). If a request needs that, it escalates.
 

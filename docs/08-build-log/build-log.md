@@ -84,6 +84,14 @@ Asked for by the participant after using the app: a logo and splash; sign-in mus
 - The token is stored in the macOS Keychain for this repository only (`git config --local credential.helper osxkeychain`). It was never typed into the chat.
 - GitLab CI file added on branch `ci/gitlab`, to be merged once its first pipeline is green. It could not be tried locally.
 
+### S12: light and dark mode, intro pages (5 Oct, late)
+Asked for by the participant: light and dark mode, and intro screens that show a new user what the app does. Four choices answered before building: keep the existing splash; follow the phone plus an in-app choice; intro on every start until sign-in; four pages, the last on what the app never does.
+- First story done on a branch (`feature/s12-theme-intro`) so the GitLab pipeline runs before `main` changes.
+- Appearance: one field on the session, saved on the phone. No screen needed changing, because no screen had a fixed colour; that was checked by a search before starting.
+- The logo and splash would have turned pale in dark mode (the dark theme's primary colour is a light lavender). They now use fixed brand colours in both modes.
+- Intro: four pages, shown by `_Root` until a flag held in memory is set. Page 4 reuses the acknowledgement's wording from one shared list, so the two cannot drift apart.
+- Result: mobile 102 tests, analyze clean, debug APK built and run on the Pixel emulator. Backend untouched.
+
 ## Size of the work, from the session record
 Read from the raw files on 4 Oct; the second session is still open, so its numbers keep rising.
 

@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../app/theme.dart';
+
 /// The DoseBook mark: an open book with a capsule above it.
 /// Same geometry (108 x 108 grid) as the Android icon in
 /// `android/app/src/main/res/drawable/ic_logo_foreground.xml` and the logo in the Figma file.
@@ -10,13 +12,14 @@ class AppLogo extends StatelessWidget {
 
   final double size;
 
-  /// Draws the mark on a rounded square in the primary colour, like the launcher icon.
-  /// Without it the mark is drawn alone, for use on a primary-coloured background.
+  /// Draws the mark on a rounded square in the brand colour, like the launcher icon.
+  /// Without it the mark is drawn alone, for use on a brand-coloured background.
+  /// The colours are the brand's and do not change with light or dark mode.
   final bool badge;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final scheme = brandScheme;
     return Semantics(
       label: 'DoseBook logo',
       image: true,

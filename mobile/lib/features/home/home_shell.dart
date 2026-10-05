@@ -4,6 +4,7 @@ import '../../app/app_scope.dart';
 import '../auth/sign_in_screen.dart';
 import '../auth/sign_up_screen.dart';
 import '../chat/chat_screen.dart';
+import '../intro/intro_screen.dart';
 import '../notes/notes_screen.dart';
 import '../profile/profile_screen.dart';
 import '../safety/feedback_screen.dart';
@@ -74,6 +75,10 @@ class AccountMenu extends StatelessWidget {
           Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const FeedbackScreen()));
         } else if (value == 'signout') {
           session.signOut();
+        } else if (value == 'appearance') {
+          showDialog<void>(context: context, builder: (_) => const AppearanceDialog());
+        } else if (value == 'about') {
+          Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const IntroScreen(pushed: true)));
         } else if (value == 'signin') {
           Navigator.of(context).push(MaterialPageRoute<bool>(builder: (_) => const SignInScreen()));
         } else if (value == 'signup') {
@@ -88,8 +93,40 @@ class AccountMenu extends StatelessWidget {
         PopupMenuItem(enabled: false, child: Text(session.me?.email ?? '')),
         const PopupMenuItem(value: 'profile', child: Text('My profile')),
         const PopupMenuItem(value: 'safety', child: Text('Feedback on past medicines')),
-        const PopupMenuItem(value: 'signout', child: Text('Sign out')),
         ],
+        const PopupMenuItem(value: 'appearance', child: Text('Appearance')),
+        const PopupMenuItem(value: 'about', child: Text('About DoseBook')),
+        if (session.signedIn) const PopupMenuItem(value: 'signout', child: Text('Sign out')),
+      ],
+    );
+  }
+}
+
+/// Light, dark, or follow the phone (S12). The choice is kept on the phone, not in the account.
+class AppearanceDialog extends StatelessWidget {
+  const AppearanceDialog({super.key});
+
+  static const _labels = {ThemeMode.system: 'System', ThemeMode.light: 'Light', ThemeMode.dark: 'Dark'};
+
+  @override
+  Widget build(BuildContext context) {
+    final session = AppScope.of(context);
+    return SimpleDialog(
+      title: const Text('Appearance'),
+      children: [
+        for (final entry in _labels.entries)
+          ListTile(
+            leading: Icon(
+              session.themeMode == entry.key ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+            ),
+            title: Text(entry.value),
+            subtitle: entry.key == ThemeMode.system ? const Text("Follows this phone's setting") : null,
+            selected: session.themeMode == entry.key,
+            onTap: () {
+              session.setThemeMode(entry.key);
+              Navigator.of(context).pop();
+            },
+          ),
       ],
     );
   }

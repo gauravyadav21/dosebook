@@ -7,7 +7,7 @@ Status on 2026-10-04. Numbers are from the last local run and will drift; rerun 
 |---|---|---|---|
 | Backend unit | `npm test` | 224 | Pure logic, mocked HTTP |
 | Backend end-to-end | `npm run test:e2e` | 212 | Real application pipeline and a real local PostgreSQL |
-| Mobile | `flutter test` | 90 | Widgets with an in-memory fake server; pure logic |
+| Mobile | `flutter test` | 102 | Widgets with an in-memory fake server; pure logic |
 | Static | `npm run lint`, `npm run build`, `flutter analyze` | | |
 
 ## How tests map to stories
@@ -53,4 +53,10 @@ Not completed in that run: choosing a file in the system file picker (scripted t
 - Tests were written before the screens: 20 widget tests in the group "Browse before sign-in, sign-in, sign-up and first run (S8, S11)". First run: the test file did not compile, because `sign_up_screen.dart`, `logo.dart` and the `tagline` wording did not exist yet. After the code was written all passed on the first run, which is weaker evidence than seeing each one fail on an assertion.
 - Run on the Pixel emulator by the AI agent: Android launch screen with the logo, visitor Today, Create account with a fake address, "Passwords do not match", account created, acknowledgement, Today, Sign out back to the visitor view, Upload as a visitor opening Sign in, launcher icon and name.
 - Not run on the device: continuing to the asked-for action after sign-in, chat as a visitor, the expired-session message (widget tests only). The Flutter splash was not caught in a screenshot; the Android launch screen was.
+- Not yet validated by the participant.
+
+## S12 (5 Oct 2026): light and dark mode, intro pages
+- Tests first, with empty stubs so each could fail on its own: of 12 new widget tests, 10 failed on their assertions before the code was written. Two passed already: "not shown to a signed-in user" (nothing showed the intro yet) and "keeps the brand colour on the splash in dark mode" (nothing could turn the app dark yet). Both are only meaningful after the code exists.
+- Run on the Pixel emulator by the AI agent: intro after the splash, swipe and Next through four pages, Get started to the visitor Today, Appearance → Dark changing the app at once, and the dark choice still in force after a restart. Screenshots of the intro and Today in dark mode were read for contrast.
+- Not run on the device: following the phone's own dark setting (widget test only), About DoseBook, Sign in from the intro, and signed-in screens in dark mode. Only two screens were looked at in dark mode by eye.
 - Not yet validated by the participant.

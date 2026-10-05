@@ -39,6 +39,9 @@ Done as story S11. The app opens on the tabs. Sign-in appears when the visitor t
 **Do we need a sign-up screen?** (5 Oct 2026)
 Yes, now separate from sign-in: email, password, password again. The email is not verified; that is future scope in the PRD.
 
+**Add light and dark mode, and intro screens.** (5 Oct 2026)
+Done as story S12. Appearance is in the account menu (System, Light, Dark) and is saved on the phone. The intro is four pages after the splash, shown on every start until sign-in, and can be reopened from "About DoseBook" in the account menu. No backend change, no new package.
+
 **Design the missing screens too.**
 Not possible that day: the Figma Starter plan's tool-call limit was reached (also: 3 pages per file). The four screens were built in the app without frames.
 

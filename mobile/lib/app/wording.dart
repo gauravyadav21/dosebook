@@ -15,6 +15,11 @@ const emergencyLine = 'In an emergency, call your local emergency number.';
 const shareOnlyContact = "Only the doctor's contact is shared. Your medicines and conditions are not.";
 const escalationTitle = "This needs a doctor's attention.";
 const escalationBody = "I can't prescribe or advise treatment. Please contact your doctor or emergency services.";
+const doesNotLines = [
+  'It does not diagnose',
+  'It does not prescribe or suggest new medicines',
+  'It does not change a dose or replace your doctor',
+];
 const tagline = 'We recall, we remind, we never prescribe.';
 const recordsPrivate = 'Your records are visible only to you.';
 const sessionEnded = 'Your session ended. Sign in again.';

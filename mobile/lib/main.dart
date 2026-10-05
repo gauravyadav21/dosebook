@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'api/api.dart';
 import 'app/app_scope.dart';
+import 'app/theme.dart';
 import 'features/home/home_shell.dart';
+import 'features/intro/intro_screen.dart';
 import 'features/onboarding/first_run_screen.dart';
 import 'features/splash/splash_screen.dart';
 import 'reminders/reminders.dart';
@@ -23,17 +25,24 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScope(
       session: session,
-      child: MaterialApp(
-        title: 'DoseBook',
-        theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
-        home: const _Root(),
+      // Rebuilt when the session changes, so a new appearance choice applies at once (S12).
+      child: ListenableBuilder(
+        listenable: session,
+        builder: (context, _) => MaterialApp(
+          title: 'DoseBook',
+          theme: appTheme(Brightness.light),
+          darkTheme: appTheme(Brightness.dark),
+          themeMode: session.themeMode,
+          home: const _Root(),
+        ),
       ),
     );
   }
 }
 
-/// Chooses the first screen: the splash while starting, then the app. A visitor browses the tabs
-/// without signing in (S11); a signed-in user sees the one-time acknowledgement first (S8).
+/// Chooses the first screen: the splash while starting, then the app. A visitor sees the intro pages
+/// (S12) and then browses the tabs without signing in (S11); a signed-in user sees the one-time
+/// acknowledgement first (S8).
 class _Root extends StatelessWidget {
   const _Root();
 
@@ -45,6 +54,8 @@ class _Root extends StatelessWidget {
       final me = session.me;
       if (me == null) return const _Offline();
       if (me.ackRequired) return const FirstRunScreen();
+    } else if (!session.introDone) {
+      return const IntroScreen();
     }
     return const HomeShell();
   }
