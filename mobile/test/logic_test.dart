@@ -102,6 +102,19 @@ void main() {
       }
     });
 
+    test('skips a time it cannot read instead of failing the whole plan', () {
+      // Found by the Gemini review (5 Oct 2026). The server only stores HH:mm, but one bad row must not stop every reminder.
+      final plan = planReminders(
+        schedules: [
+          schedule(id: 'bad', slots: ['soon', '7', '25:00', '08:99', ''], end: null),
+          schedule(id: 'good', slots: ['NIGHT'], end: null),
+        ],
+        now: morning,
+        days: 1,
+      );
+      expect(plan.map((r) => r.at), [DateTime(2026, 10, 4, 21, 0), DateTime(2026, 10, 4, 21, 30)]);
+    });
+
     test('plans nothing without schedules', () {
       expect(planReminders(schedules: [], now: morning), isEmpty);
     });

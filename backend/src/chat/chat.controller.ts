@@ -6,7 +6,7 @@ import { UserId } from '../auth/auth.decorators.js';
 import { GENERAL_INFO_DISCLAIMER } from '../medicine-info/medicine-info.js';
 import { MedicineInfoService } from '../medicine-info/medicine-info.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { type ChatAnswer, decide, declined, guard, type HistoryItem, medicineInfoAnswer } from './chat.rules.js';
+import { type ChatAnswer, decide, declined, guard, type HistoryItem, lookupUnavailable, medicineInfoAnswer } from './chat.rules.js';
 
 export class ChatDto {
   @ApiProperty({ example: 'I have a sore throat' })
@@ -67,6 +67,10 @@ export class ChatController {
 
     // Only the medicine name goes to the lookup, never the message or the user's data.
     const info = await this.medicineInfo.find(decision.name);
+    // A bare word we could not check is not called out of scope: the lookup failed, and we say so.
+    if (!info.found && info.reason === 'UNAVAILABLE' && decision.own.length === 0 && !decision.explicit) {
+      return lookupUnavailable();
+    }
     if (!info.found && decision.own.length === 0 && (info.reason === 'NOT_A_MEDICINE' || !decision.explicit)) {
       return declined();
     }

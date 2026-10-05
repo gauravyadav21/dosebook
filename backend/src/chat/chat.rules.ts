@@ -14,6 +14,7 @@ export const NO_HISTORY_TEXT =
   "I don't have anything for this in your own records, and I can't suggest a medicine. Please see a doctor.";
 export const DECLINED_TEXT =
   "I can do two things: show what you took before for a symptom, or look up a medicine. I can't help with anything else.";
+export const LOOKUP_UNAVAILABLE_TEXT = 'I could not look that up just now. Please try again in a little while.';
 export const DOSAGE_TEXT =
   "I can't tell you how much to take. Taking a medicine without a doctor's advice is not recommended. Please visit your doctor.";
 export const PRESCRIPTION_LABEL = 'From prescription';
@@ -139,6 +140,12 @@ const DOSAGE: RegExp[] = [
   /\b\d+(\.\d+)?\s?(mg|mcg|ml|g|iu|units?)\b/,
   /\b(times|tablets?|pills?|capsules?|spoons?|drops?) (a|per|each|every) (day|night|week|hour)\b/,
   /\b(double|increase|raise|reduce|lower|more|extra|another|half|two|three|2|3)\b.*\b(tablets?|pills?|capsules?|spoons?|drops?)\b/,
+  // Dosage asked without a number or the word "dose": how, when or how long to take it, and "amount".
+  /\b(amount|quantity)\b/,
+  /\bhow (do|should|can|must) (i|we|you) (take|use|give)\b/,
+  /\b(how|when) to (take|use|give)\b/,
+  /\bwhen (do|should|can|must) (i|we|you) (take|use|give)\b/,
+  /\bhow long (do|should|can|must) (i|we|you)\b/,
 ];
 
 export function asksDosage(message: string): boolean {
@@ -280,6 +287,11 @@ function escalation(reason: EscalationReason, excludedCount = 0): ChatAnswer {
 
 export function dosageRefusal(): ChatAnswer {
   return { kind: 'DECLINED', reason: 'DOSAGE', text: DOSAGE_TEXT, medicines: [], excludedCount: 0, footer: FOOTER_TEXT };
+}
+
+/** The lookup service did not answer. Said plainly, so the user does not think the question was out of scope. */
+export function lookupUnavailable(): ChatAnswer {
+  return { kind: 'DECLINED', text: LOOKUP_UNAVAILABLE_TEXT, medicines: [], excludedCount: 0, footer: FOOTER_TEXT };
 }
 
 export function declined(): ChatAnswer {

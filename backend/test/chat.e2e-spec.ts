@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { DECLINED_TEXT, DOSAGE_TEXT, ESCALATION_TEXT, FOOTER_TEXT } from '../src/chat/chat.rules.js';
+import { DECLINED_TEXT, DOSAGE_TEXT, ESCALATION_TEXT, FOOTER_TEXT, LOOKUP_UNAVAILABLE_TEXT } from '../src/chat/chat.rules.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { GENERAL_INFO_DISCLAIMER, MEDICINE_INFO_PROVIDER, type LookupResult } from '../src/medicine-info/medicine-info.js';
 import { confirmed, createApp, signUp, type TestUser } from './support/app.js';
@@ -337,6 +337,19 @@ describe('S5 chat: medicine lookup with a model, saved for reuse (e2e)', () => {
     const user = await signUp(app);
     const body = await ask(user, `what is ${medicine}`);
     expect(body).toMatchObject({ kind: 'MEDICINE_INFO', generalInfo: null, medicines: [] });
+  });
+
+  it('says the lookup is unavailable, not that the request is out of scope, when a bare medicine name cannot be looked up', async () => {
+    // Found on the emulator on 5 Oct 2026: the lookup timed out and "cetirizine" got the generic refusal.
+    const medicine = unique('Slowmed');
+    reply = () => {
+      throw new Error('The operation was aborted due to timeout');
+    };
+    const user = await signUp(app);
+    const body = await ask(user, medicine);
+    expect(body).toMatchObject({ kind: 'DECLINED', text: LOOKUP_UNAVAILABLE_TEXT, medicines: [] });
+    expect(body.text).not.toBe(DECLINED_TEXT);
+    expect(body.generalInfo ?? null).toBeNull();
   });
 
   it('does not call the lookup for symptoms, red flags, dosage questions or long off-topic messages', async () => {

@@ -4,7 +4,8 @@ import { MEDICINE_INFO_PROVIDER, medicineKey, type MedicineInfoProvider } from '
 
 export type GeneralInfo =
   | { found: true; name: string; usedFor: string; storage: string | null }
-  | { found: false; reason: 'NOT_A_MEDICINE' | 'UNKNOWN' };
+  // UNAVAILABLE: the lookup itself failed (timeout, quota), so nothing is known either way.
+  | { found: false; reason: 'NOT_A_MEDICINE' | 'UNKNOWN' | 'UNAVAILABLE' };
 
 @Injectable()
 export class MedicineInfoService {
@@ -40,7 +41,7 @@ export class MedicineInfoService {
       return { found: true, name: result.name, usedFor: result.usedFor, storage: result.storage };
     } catch (error) {
       this.logger.warn(`Medicine lookup failed: ${(error as Error).message}`);
-      return { found: false, reason: 'UNKNOWN' };
+      return { found: false, reason: 'UNAVAILABLE' };
     }
   }
 }

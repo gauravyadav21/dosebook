@@ -96,6 +96,14 @@ describe('dosage questions', () => {
     'paracetamol 3 times a day?',
     'can I have two tablets at once',
     'what is the right dose for my sore throat',
+      // Found by the Gemini review (5 Oct 2026): dosage asked without a number or the word "dose".
+    'what is the correct amount of paracetamol',
+    'what quantity of cetirizine',
+    'how do I take ibuprofen',
+    'how should I take ibuprofen',
+    'how to take cetirizine',
+    'when do I take paracetamol',
+    'how long should I take ibuprofen',
   ];
 
   it.each(questions)('recognises "%s"', (message) => {
@@ -107,7 +115,15 @@ describe('dosage questions', () => {
     expect(result).toEqual({ kind: 'DECLINED', reason: 'DOSAGE', text: DOSAGE_TEXT, medicines: [], excludedCount: 0, footer: FOOTER_TEXT });
   });
 
-  it.each(['I have a sore throat', 'what is paracetamol', 'paracetamol', 'tell me about ibuprofen'])(
+  it.each([
+    'I have a sore throat',
+    'what is paracetamol',
+    'paracetamol',
+    'tell me about ibuprofen',
+    'what did I take for a sore throat',
+    'when did I take ibuprofen',
+    'how long ago was my allergy prescription',
+  ])(
     'does not treat "%s" as a dosage question',
     (message) => {
       expect(asksDosage(message)).toBe(false);

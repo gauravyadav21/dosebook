@@ -22,11 +22,16 @@ const followUpDelay = Duration(minutes: 30);
 /// The plan is rebuilt whenever the app opens or a dose is marked.
 const maxPlanned = 60;
 
-(int, int) _timeOf(String slot) {
+/// The clock time of a slot: a named one, or the user's own "HH:mm". Null when it cannot be read.
+(int, int)? _timeOf(String slot) {
   final named = slotTimes[slot];
   if (named != null) return named;
   final parts = slot.split(':');
-  return (int.parse(parts[0]), int.parse(parts[1]));
+  if (parts.length != 2) return null;
+  final hour = int.tryParse(parts[0]);
+  final minute = int.tryParse(parts[1]);
+  if (hour == null || minute == null || hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+  return (hour, minute);
 }
 
 int _idFor(String medicineId, String date, String slot, bool followUp) =>
@@ -53,7 +58,10 @@ List<PlannedReminder> planReminders({
       if (s.endDate != null && date.compareTo(s.endDate!) >= 0) continue;
       for (final slot in s.slots) {
         if (marked.contains(doseKey(s.medicineId, date, slot))) continue;
-        final (hour, minute) = _timeOf(slot);
+        final time = _timeOf(slot);
+        // One unreadable time must not stop every other reminder from being planned.
+        if (time == null) continue;
+        final (hour, minute) = time;
         final at = DateTime(day.year, day.month, day.day, hour, minute);
         final own = s.origin == 'YOUR_REMINDER';
         final detail = dotted([s.dose, foodLabel(s.food), own ? 'your reminder' : 'as prescribed']);
