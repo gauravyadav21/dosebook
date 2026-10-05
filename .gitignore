@@ -1,0 +1,18 @@
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+.DS_Store
+*.log
+coverage/
+*.tsbuildinfo
+
+# Obsidian (docs/ is the vault): keep shared config, ignore per-machine state
+docs/.obsidian/workspace*.json
+docs/.obsidian/plugins/
+docs/.obsidian/cache
+docs/.trash/
+
+# Full raw record of the build sessions. Kept locally only: it contains off-topic screen text and must not enter the submitted history.
+.session-archive/

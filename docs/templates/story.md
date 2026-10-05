@@ -1,0 +1,6 @@
+# S?: Title
+As a user I ... so that ...
+
+Acceptance criteria
+- Given ..., when ..., then ...
+- Negative: bad input / expired token / another user's data / network failure
