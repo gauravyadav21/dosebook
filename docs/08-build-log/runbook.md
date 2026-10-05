@@ -85,5 +85,9 @@ gitleaks dir backend/src mobile/lib docs
 | A curl URL with `$VAR:something` breaks in zsh | zsh reads `:g` as a modifier | Write `${VAR}:something` |
 | App will not start on an emulator ("error code 5") | Wrong emulator (kiosk-style device) | Use the Pixel emulator; pass `-s <serial>` |
 | pgAdmin asks for a master password | pgAdmin's own password store | Set or reset it; not related to the database |
+| `git push`: "could not read Username for 'https://gitlab.com'" | Run where no prompt can appear | Run it in Terminal.app |
+| `git push`: "HTTP Basic: Access denied" | Account password used, or a token without write scope | Personal access token with `write_repository` as the password. Clear a bad saved one: `printf "protocol=https\nhost=gitlab.com\n\n" \| git credential-osxkeychain erase` |
+| `git push`: "rejected (fetch first)" | The remote has a commit you do not have (GitLab's README) | `git fetch origin`, look at it, `git rebase origin/main`, push. No force |
+| CI does not start on GitLab | Only `.github/workflows/ci.yml` exists | GitLab reads `.gitlab-ci.yml` |
 | Figma tools missing | Server registered but not signed in | `/mcp` → figma → authenticate |
 | Figma refuses calls | Starter plan tool-call limit | Wait for reset; batch work into few calls |

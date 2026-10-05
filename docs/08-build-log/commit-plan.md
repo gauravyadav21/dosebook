@@ -7,7 +7,7 @@ Rules that apply to every commit (from `AGENTS.md`):
 - State what was tested and by whom before committing. The checks named below were run by the AI agent on 4 Oct 2026 on the development Mac; rerun them at commit time.
 - No AI-tool attribution lines.
 - `gitleaks` runs in the pre-commit hook (`git config core.hooksPath .githooks`).
-- Once the repo is on GitHub: push each story as a branch, open a pull request and request a review from Copilot. Record its findings and what was done about them in `docs/04-ai/tool-trials.md`. This is the review by a different model that the per-story loop asks for. Copilot Free allows about 50 such requests a month.
+- The repo is on GitLab (since 5 Oct 2026): push each story as a branch and open a merge request, so the pipeline runs before `main` changes. For a review by a different model, GitLab Duo can be asked on the merge request if the account has it; Copilot review needs a GitHub mirror. Originally written for GitHub: push each story as a branch, open a pull request and request a review from Copilot. Record its findings and what was done about them in `docs/04-ai/tool-trials.md`. This is the review by a different model that the per-story loop asks for. Copilot Free allows about 50 such requests a month.
 
 The working tree holds the final state of every file, so earlier commits will contain code shaped by later changes (for example notes were rewritten after first use). That is honest to say in the message; do not try to recreate intermediate versions.
 
@@ -43,4 +43,5 @@ Twelve commits on `main`, in the order above, author set for this repository onl
 - Differences from the plan: `backend/src/common/gemini.ts` went into commit 4 (the shared helpers' unit test covers it). Story S11 was written after the plan; its code is inside commits 10 and 11 and its story file in commit 2, so there is no separate commit 13.
 - Commits 4 to 8 and commit 10 do not build on their own; each message says so. The backend builds from commit 9, the app from commit 11.
 - Checks: backend lint, build, 224 unit and 212 end-to-end tests, and mobile analyze, 90 tests and a debug build were run on the whole working tree before the first backend and first mobile commit. Tests were not rerun per commit, because the tree did not change between them. gitleaks ran in the pre-commit hook on every commit.
-- The remote is GitLab. `.github/workflows/ci.yml` is a GitHub Actions file and will not run there; a `.gitlab-ci.yml` is still to be written.
+- The remote is GitLab. `.github/workflows/ci.yml` is a GitHub Actions file and will not run there; `.gitlab-ci.yml` was added afterwards on branch `ci/gitlab`.
+- The push: GitLab had already made an "Initial commit" holding a template README, so the first push was refused. The 12 commits were replayed on top of that commit (`git rebase origin/main`, keeping our README) and pushed without force. The files are identical to before the replay; only the commit hashes changed.

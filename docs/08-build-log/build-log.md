@@ -80,7 +80,9 @@ Asked for by the participant after using the app: a logo and splash; sign-in mus
 - Remote added: GitLab. Author name and email set with `git config --local`, so no other repository on the Mac is affected.
 - Twelve commits made story by story from `commit-plan.md`. The first five were verified by the participant one at a time; the rest were made in one run at the participant's instruction.
 - Each commit was scanned by gitleaks in the pre-commit hook, and its diff was searched for a personal email address, home-folder paths and day-job names before committing.
-- Not done by the AI agent: the push. This Mac has no saved GitLab sign-in, so the participant runs it.
+- The push took four tries, all recorded in the runbook: no sign-in available to the AI agent's shell; the account password refused (GitLab wants an access token); then "rejected (fetch first)", because GitLab had created an "Initial commit" with a template README. The 12 commits were replayed on top of it, keeping our README, and pushed without force. Files unchanged by the replay (same tree hash before and after).
+- The token is stored in the macOS Keychain for this repository only (`git config --local credential.helper osxkeychain`). It was never typed into the chat.
+- GitLab CI file added on branch `ci/gitlab`, to be merged once its first pipeline is green. It could not be tried locally.
 
 ## Size of the work, from the session record
 Read from the raw files on 4 Oct; the second session is still open, so its numbers keep rising.

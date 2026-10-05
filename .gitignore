@@ -16,3 +16,7 @@ docs/.trash/
 
 # Full raw record of the build sessions. Kept locally only: it contains off-topic screen text and must not enter the submitted history.
 .session-archive/
+
+# CI caches kept inside the project folder by .gitlab-ci.yml
+.npm/
+.pub-cache/

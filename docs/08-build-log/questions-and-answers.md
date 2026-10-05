@@ -118,6 +118,12 @@ No. The project shows the developer's thinking: the scope, the constraints and t
 **What is the project called?**
 DoseBook, since 5 Oct 2026. Before that the working name was "Personal Medicine Memory". In code: Flutter package `dosebook`, application id `com.dosebook.app`, databases `dosebook_app` and `dosebook_test`.
 
+**Why did `git push` fail, and what fixed it?** (5 Oct 2026)
+Three different causes, in order. (1) "could not read Username": the command was run where no prompt can appear (the AI agent's shell, and the `!` prefix); run it in Terminal.app. (2) "HTTP Basic: Access denied": GitLab does not accept the account password for git; use a personal access token with `write_repository` as the password. (3) "rejected (fetch first)": the project was created on GitLab with a README, so the remote already had a commit; fetch, replay the local commits on top (`git rebase origin/main`) and push. Never force-push to fix this without looking at what is on the remote first.
+
+**Can the AI agent push?** (5 Oct 2026)
+Only after the participant has signed in once from Terminal with the Keychain helper set for this repo. The token is never given to the agent.
+
 ## Record keeping
 
 **Are you saving all details of how this was built?**

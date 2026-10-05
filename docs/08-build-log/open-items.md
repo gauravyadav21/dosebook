@@ -3,11 +3,11 @@
 Everything not done or not verified, in one list. Status on 4 Oct 2026. Update this file as items close.
 
 ## Must happen before the work counts
-1. **Commit.** Done on 5 Oct 2026 as 12 story-sized commits (see `commit-plan.md`); pushing needs the participant's GitLab sign-in. CI: the workflow file is for GitHub Actions and the remote is GitLab, so a `.gitlab-ci.yml` is still needed. Before that: nothing was committed. The roadmap submits the full Git history and scores the AI workflow from it. Commit story by story, following `commit-plan.md`.
+1. **Commit.** Done on 5 Oct 2026 as 12 story-sized commits (see `commit-plan.md`); pushed to GitLab the same night. Before that: nothing was committed. The roadmap submits the full Git history and scores the AI workflow from it. Commit story by story, following `commit-plan.md`.
 2. **Human review of every diff.** Not done. Required by the roadmap and by `AGENTS.md`.
 3. **Review by a second model** (`review-diff` skill). Not done.
 4. **Check the tests against the stories.** The same agent wrote code and tests in one session, tests alongside rather than first.
-5. **Push and get CI green.** The workflow (with a new Postgres service and an APK build) has never run.
+5. **Get CI green.** Pushed on 5 Oct 2026. `.gitlab-ci.yml` (secret scan, backend with a Postgres service, mobile with an APK build) was added on branch `ci/gitlab`; it reaches `main` only after its first pipeline is green. The AI agent cannot read the pipeline result (private project, no API token), so the participant checks it under Build → Pipelines. `.github/workflows/ci.yml` is kept for a possible GitHub mirror and does not run on GitLab.
 
 ## To stand out (this project)
 From `docs/09-playbook/standing-out.md`. None of these is done yet.

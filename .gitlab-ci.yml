@@ -1,0 +1,79 @@
+# GitLab CI for DoseBook. Same three checks as .github/workflows/ci.yml:
+# secret scan, backend (lint, build, unit and end-to-end tests), mobile (analyze, tests, debug build).
+# No secrets are needed: the database is a throwaway service with fake data, and the tests never call Gemini.
+
+stages:
+  - check
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
+secrets:
+  stage: check
+  image:
+    name: zricethezav/gitleaks:v8.30.1
+    entrypoint: [""]
+  variables:
+    # The whole history is scanned, as the whole history is submitted.
+    GIT_DEPTH: 0
+  script:
+    - gitleaks git . --redact --no-banner
+
+backend:
+  stage: check
+  # Node 20 is what the tests were run on locally; Prisma 7 needs 20.19 or newer.
+  image: node:20
+  services:
+    - name: postgres:15
+      alias: postgres
+  variables:
+    # Throwaway CI database with fake data; no password, reachable only inside the job.
+    POSTGRES_USER: app
+    POSTGRES_DB: dosebook_test
+    POSTGRES_HOST_AUTH_METHOD: trust
+    TEST_DATABASE_URL: postgresql://app@postgres:5432/dosebook_test
+    DATABASE_URL: postgresql://app@postgres:5432/dosebook_test
+    npm_config_cache: $CI_PROJECT_DIR/.npm
+  cache:
+    key:
+      files:
+        - backend/package-lock.json
+    paths:
+      - .npm/
+  before_script:
+    - cd backend
+    - npm ci
+  script:
+    - npm run lint
+    - npm run build
+    - npm test
+    - npm run test:e2e
+
+mobile:
+  stage: check
+  # Flutter 3.38.8 is the version the app was built and tested with.
+  image: ghcr.io/cirruslabs/flutter:3.38.8
+  variables:
+    PUB_CACHE: $CI_PROJECT_DIR/.pub-cache
+  cache:
+    key:
+      files:
+        - mobile/pubspec.lock
+    paths:
+      - .pub-cache/
+  before_script:
+    - cd mobile
+    - flutter pub get
+  script:
+    - flutter analyze
+    - flutter test
+    - flutter build apk --debug
+  artifacts:
+    name: dosebook-debug-apk
+    paths:
+      - mobile/build/app/outputs/flutter-apk/app-debug.apk
+    expire_in: 1 week
