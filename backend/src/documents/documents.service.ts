@@ -1,12 +1,9 @@
-import { randomUUID } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { APP_CONFIG, type AppConfig } from '../common/config.js';
 import { EXTRACTOR, type ExtractionResult, type Extractor } from '../extraction/extraction.types.js';
 import type { Document } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { extensionFor, MAX_FILE_BYTES, sniffMime } from './file-type.js';
+import { FILE_STORE, type FileStore } from './file-store.js';
+import { MAX_FILE_BYTES, sniffMime } from './file-type.js';
 
 export interface UploadedFile {
   originalname: string;
@@ -32,7 +29,7 @@ export class DocumentsService {
 
   constructor(
     private readonly prisma: PrismaService,
-    @Inject(APP_CONFIG) private readonly config: AppConfig,
+    @Inject(FILE_STORE) private readonly files: FileStore,
     @Inject(EXTRACTOR) private readonly extractor: Extractor,
   ) {}
 
@@ -42,15 +39,10 @@ export class DocumentsService {
     const mimeType = sniffMime(file.buffer);
     if (!mimeType) throw new BadRequestException('File type is not supported. Use a JPEG, PNG or PDF.');
 
-    // Stored under a generated name: the original name never becomes part of a path.
-    const dir = resolve(this.config.uploadDir, userId);
-    await mkdir(dir, { recursive: true });
-    const storagePath = join(dir, `${randomUUID()}.${extensionFor(mimeType)}`);
-    await writeFile(storagePath, file.buffer);
-
+    const placement = await this.files.put(userId, mimeType, file.buffer);
     const fileName = file.originalname.slice(0, 200);
     let doc = await this.prisma.document.create({
-      data: { userId, fileName, mimeType, size: file.size, storagePath },
+      data: { userId, fileName, mimeType, size: file.size, ...placement },
     });
 
     let extraction: ExtractionResult | null = null;
@@ -73,5 +65,11 @@ export class DocumentsService {
     const doc = await this.prisma.document.findFirst({ where: { id, userId } });
     if (!doc) throw new NotFoundException('Document not found');
     return doc;
+  }
+
+  /** The stored original, for its owner only. */
+  async file(userId: string, id: string): Promise<{ data: Buffer; mimeType: string }> {
+    const doc = await this.get(userId, id);
+    return { data: await this.files.read(doc), mimeType: doc.mimeType };
   }
 }

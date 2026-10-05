@@ -1,3 +1,4 @@
+import '../app/wording.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -8,6 +9,9 @@ import 'models.dart';
 /// Base URL comes from `--dart-define=API_BASE_URL=...`; no URLs or keys in code.
 /// The Android emulator reaches the host machine at 10.0.2.2.
 const apiBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://10.0.2.2:3000');
+
+/// True in the build given to judges (`--dart-define=DEMO=true`): the app talks to the public demo server (S13).
+const demoBuild = bool.fromEnvironment('DEMO');
 
 class ApiException implements Exception {
   ApiException(this.status, this.message, [this.body]);
@@ -32,7 +36,14 @@ class DoctorNameMatch implements Exception {
 
 /// Client for the backend. Holds the session token; every call except sign-in sends it.
 class Api {
-  Api({http.Client? client, this.baseUrl = apiBaseUrl}) : _client = client ?? http.Client();
+  Api({http.Client? client, this.baseUrl = apiBaseUrl, this.demo = demoBuild}) : _client = client ?? http.Client();
+
+  final bool demo;
+
+  /// A sleeping demo server looks the same as no connection, so the demo build says which is likely.
+  String get _unreachable => demo
+      ? 'Could not reach the server. $demoServerWaking'
+      : 'Could not reach the server. Check your connection and try again.';
 
   final http.Client _client;
   final String baseUrl;
@@ -68,7 +79,7 @@ class Api {
     try {
       res = await call().timeout(_timeout);
     } catch (_) {
-      throw ApiException(0, 'Could not reach the server. Check your connection and try again.');
+      throw ApiException(0, _unreachable);
     }
     final dynamic decoded = res.body.isEmpty ? null : _tryDecode(res.body);
     if (res.statusCode >= 200 && res.statusCode < 300) return decoded;
@@ -128,7 +139,7 @@ class Api {
     try {
       res = await _client.get(_uri('/documents/$documentId/file'), headers: _headers).timeout(_timeout);
     } catch (_) {
-      throw ApiException(0, 'Could not reach the server. Check your connection and try again.');
+      throw ApiException(0, _unreachable);
     }
     if (res.statusCode != 200) throw ApiException(res.statusCode, 'Could not open the document.');
     return (bytes: res.bodyBytes, contentType: res.headers['content-type'] ?? '');

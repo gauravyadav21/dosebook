@@ -94,6 +94,7 @@ describe('S1 upload and S2 extraction (e2e)', () => {
     const user = await signUp(app);
     const doc = await upload(app, user, '../../sore-throat.png');
     const row = await app.get(PrismaService).document.findUniqueOrThrow({ where: { id: doc.body.id } });
+    expect(row.storagePath).toEqual(expect.any(String));
     expect(row.storagePath).not.toContain('sore-throat');
     expect(row.storagePath).not.toContain('..');
   });

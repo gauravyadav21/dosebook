@@ -1,0 +1,1506 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "status": "ok"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/me": {
+      "get": {
+        "operationId": "MeController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/me/acknowledgement": {
+      "put": {
+        "operationId": "MeController_acknowledge",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcknowledgeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/me/profile": {
+      "get": {
+        "operationId": "MeController_profile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "me"
+        ]
+      },
+      "put": {
+        "operationId": "MeController_saveProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CredentialsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CredentialsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/documents": {
+      "post": {
+        "operationId": "DocumentsController_upload",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/documents/{id}": {
+      "get": {
+        "operationId": "DocumentsController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/documents/{id}/file": {
+      "get": {
+        "operationId": "DocumentsController_file",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/documents/{id}/confirm": {
+      "post": {
+        "operationId": "PrescriptionsController_confirm",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "409": {
+            "description": "Already confirmed, or code DOCTOR_NAME_MATCH: resend with sameDoctorId or newDoctor."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "prescriptions"
+        ]
+      }
+    },
+    "/prescriptions": {
+      "get": {
+        "operationId": "PrescriptionsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "prescriptions"
+        ]
+      }
+    },
+    "/prescriptions/{id}": {
+      "get": {
+        "operationId": "PrescriptionsController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "prescriptions"
+        ]
+      }
+    },
+    "/medicines": {
+      "get": {
+        "operationId": "MedicinesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "medicines"
+        ]
+      }
+    },
+    "/medicines/{id}/feedback": {
+      "put": {
+        "operationId": "MedicinesController_feedback",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "medicines"
+        ]
+      }
+    },
+    "/medicines/{id}/schedule": {
+      "patch": {
+        "operationId": "MedicinesController_editSchedule",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "medicines"
+        ]
+      }
+    },
+    "/medicines/{id}/schedule/stop": {
+      "post": {
+        "operationId": "MedicinesController_stop",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StopDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "medicines"
+        ]
+      }
+    },
+    "/allergies": {
+      "get": {
+        "operationId": "AllergiesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "allergies"
+        ]
+      },
+      "post": {
+        "operationId": "AllergiesController_add",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AllergyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "allergies"
+        ]
+      }
+    },
+    "/allergies/{id}": {
+      "delete": {
+        "operationId": "AllergiesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "allergies"
+        ]
+      }
+    },
+    "/doses/today": {
+      "get": {
+        "operationId": "DosesController_today",
+        "parameters": [
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "The user's local date. Defaults to today (UTC).",
+            "schema": {
+              "example": "2026-10-04",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "doses"
+        ]
+      }
+    },
+    "/doses/mark": {
+      "post": {
+        "operationId": "DosesController_mark",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkDoseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "doses"
+        ]
+      }
+    },
+    "/doses/schedules": {
+      "get": {
+        "operationId": "DosesController_schedules",
+        "parameters": [
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "The user's local date. Defaults to today (UTC).",
+            "schema": {
+              "example": "2026-10-04",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "doses"
+        ]
+      }
+    },
+    "/notes": {
+      "get": {
+        "operationId": "NotesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "notes"
+        ]
+      },
+      "post": {
+        "operationId": "NotesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "notes"
+        ]
+      }
+    },
+    "/notes/{id}": {
+      "patch": {
+        "operationId": "NotesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "notes"
+        ]
+      },
+      "delete": {
+        "operationId": "NotesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "notes"
+        ]
+      }
+    },
+    "/own-reminders": {
+      "get": {
+        "operationId": "OwnRemindersController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "own-reminders"
+        ]
+      },
+      "post": {
+        "operationId": "OwnRemindersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOwnReminderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "own-reminders"
+        ]
+      }
+    },
+    "/own-reminders/{id}": {
+      "patch": {
+        "operationId": "OwnRemindersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOwnReminderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "own-reminders"
+        ]
+      },
+      "delete": {
+        "operationId": "OwnRemindersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "own-reminders"
+        ]
+      }
+    },
+    "/chat": {
+      "post": {
+        "operationId": "ChatController_chat",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      }
+    },
+    "/doctors": {
+      "get": {
+        "operationId": "DoctorsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "doctors"
+        ]
+      }
+    },
+    "/doctors/{id}": {
+      "get": {
+        "operationId": "DoctorsController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "doctors"
+        ]
+      },
+      "patch": {
+        "operationId": "DoctorsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDoctorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "doctors"
+        ]
+      },
+      "delete": {
+        "operationId": "DoctorsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "doctors"
+        ]
+      }
+    },
+    "/doctors/{id}/share": {
+      "get": {
+        "operationId": "DoctorsController_share",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "doctors"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "DoseBook API",
+    "description": "Recall and remind. The API never prescribes: it only returns what the user confirmed or noted.",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "AcknowledgeDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "example": 1
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "ProfileDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "object",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "object",
+            "nullable": true,
+            "example": "1990-05-17"
+          },
+          "sex": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "FEMALE",
+              "MALE",
+              "OTHER"
+            ]
+          },
+          "heightCm": {
+            "type": "object",
+            "nullable": true,
+            "minimum": 30,
+            "maximum": 272,
+            "description": "Centimetres"
+          },
+          "weightKg": {
+            "type": "object",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 500,
+            "description": "Kilograms"
+          },
+          "bloodGroup": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "A+",
+              "A-",
+              "B+",
+              "B-",
+              "AB+",
+              "AB-",
+              "O+",
+              "O-"
+            ]
+          },
+          "emergencyName": {
+            "type": "object",
+            "nullable": true
+          },
+          "emergencyPhone": {
+            "type": "object",
+            "nullable": true
+          },
+          "conditions": {
+            "type": "object",
+            "nullable": true
+          }
+        }
+      },
+      "CredentialsDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "demo.patient@example.com"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "TokenDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "accessToken"
+        ]
+      },
+      "DoctorDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Dr. A. Mehra"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+91 00000 00101"
+          },
+          "registrationNo": {
+            "type": "string"
+          },
+          "specialty": {
+            "type": "string"
+          },
+          "availability": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ScheduleDto": {
+        "type": "object",
+        "properties": {
+          "slots": {
+            "type": "array",
+            "example": [
+              "MORNING",
+              "NOON",
+              "NIGHT"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "MORNING",
+                "NOON",
+                "EVENING",
+                "NIGHT"
+              ]
+            }
+          },
+          "food": {
+            "type": "string",
+            "enum": [
+              "BEFORE_FOOD",
+              "AFTER_FOOD"
+            ]
+          },
+          "dosesPerDay": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 4
+          },
+          "courseDays": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 365
+          },
+          "startDate": {
+            "type": "string",
+            "example": "2026-10-04",
+            "description": "First day of the course in the user's local date. Defaults to today (UTC)."
+          }
+        },
+        "required": [
+          "slots",
+          "food",
+          "dosesPerDay",
+          "courseDays"
+        ]
+      },
+      "ConfirmMedicineDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Paracetamol"
+          },
+          "dose": {
+            "type": "string",
+            "example": "500 mg, 1 tablet"
+          },
+          "frequency": {
+            "type": "string",
+            "example": "3 times a day"
+          },
+          "duration": {
+            "type": "string",
+            "example": "5 days"
+          },
+          "schedule": {
+            "$ref": "#/components/schemas/ScheduleDto"
+          }
+        },
+        "required": [
+          "name",
+          "dose",
+          "schedule"
+        ]
+      },
+      "ConfirmDto": {
+        "type": "object",
+        "properties": {
+          "condition": {
+            "type": "string",
+            "example": "Sore throat"
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-03-12"
+          },
+          "doctor": {
+            "$ref": "#/components/schemas/DoctorDto"
+          },
+          "sameDoctorId": {
+            "type": "string",
+            "description": "Answer to \"Same doctor?\": link to this existing card."
+          },
+          "newDoctor": {
+            "type": "boolean",
+            "description": "Answer to \"Same doctor?\": create a new card even though a name matches."
+          },
+          "medicines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConfirmMedicineDto"
+            }
+          }
+        },
+        "required": [
+          "condition",
+          "date",
+          "doctor",
+          "medicines"
+        ]
+      },
+      "FeedbackDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "enum": [
+              "WORKED",
+              "DID_NOT_WORK",
+              "SIDE_EFFECT"
+            ],
+            "nullable": true,
+            "description": "null clears the feedback"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "StopDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "The user's local date. Defaults to today (UTC)."
+          }
+        }
+      },
+      "AllergyDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Penicillin"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "MarkDoseDto": {
+        "type": "object",
+        "properties": {
+          "medicineId": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-10-04"
+          },
+          "slot": {
+            "type": "string",
+            "example": "MORNING",
+            "description": "Slot name, or HH:mm for an own reminder"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "TAKEN",
+              "SKIPPED"
+            ]
+          }
+        },
+        "required": [
+          "medicineId",
+          "date",
+          "slot",
+          "status"
+        ]
+      },
+      "NoteDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "example": "Ask Dr. Mehra about the cough at the next visit."
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "CreateOwnReminderDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Vitamin D3"
+          },
+          "dose": {
+            "type": "string",
+            "example": "1 capsule"
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "MORNING",
+                "NOON",
+                "EVENING",
+                "NIGHT"
+              ]
+            }
+          },
+          "times": {
+            "example": [
+              "08:00"
+            ],
+            "description": "Clock times as HH:mm",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "startDate": {
+            "type": "string",
+            "description": "The user's local date. Defaults to today (UTC)."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateOwnReminderDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Vitamin D3"
+          },
+          "dose": {
+            "type": "string",
+            "example": "1 capsule"
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "MORNING",
+                "NOON",
+                "EVENING",
+                "NIGHT"
+              ]
+            }
+          },
+          "times": {
+            "example": [
+              "08:00"
+            ],
+            "description": "Clock times as HH:mm",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "startDate": {
+            "type": "string",
+            "description": "The user's local date. Defaults to today (UTC)."
+          }
+        }
+      },
+      "ChatDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "I have a sore throat"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "UpdateDoctorDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "object",
+            "nullable": true
+          },
+          "registrationNo": {
+            "type": "object",
+            "nullable": true
+          },
+          "specialty": {
+            "type": "object",
+            "nullable": true
+          },
+          "availability": {
+            "type": "object",
+            "nullable": true
+          }
+        }
+      }
+    }
+  }
+}

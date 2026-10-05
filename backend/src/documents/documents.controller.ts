@@ -1,4 +1,3 @@
-import { createReadStream } from 'node:fs';
 import {
   type ArgumentsHost,
   BadRequestException,
@@ -17,9 +16,12 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { UserId } from '../auth/auth.decorators.js';
 import { DocumentsService, toDocumentView, type UploadedFile as Upload } from './documents.service.js';
 import { MAX_FILE_BYTES } from './file-type.js';
+
+const uploadLimit = () => Number(process.env.UPLOAD_THROTTLE_LIMIT ?? 20);
 
 /** The upload story asks for 400 on an oversize file; the framework's default is 413. */
 @Catch(PayloadTooLargeException)
@@ -37,6 +39,8 @@ export class DocumentsController {
   constructor(private readonly documents: DocumentsService) {}
 
   @Post()
+  // Reading a prescription may call a model, so uploads have their own, lower limit.
+  @Throttle({ default: { ttl: 60_000, limit: uploadLimit } })
   @UseFilters(OversizeFilter)
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_FILE_BYTES, files: 1 } }))
   @ApiConsumes('multipart/form-data')
@@ -52,7 +56,7 @@ export class DocumentsController {
 
   @Get(':id/file')
   async file(@UserId() userId: string, @Param('id', ParseUUIDPipe) id: string): Promise<StreamableFile> {
-    const doc = await this.documents.get(userId, id);
-    return new StreamableFile(createReadStream(doc.storagePath), { type: doc.mimeType });
+    const { data, mimeType } = await this.documents.file(userId, id);
+    return new StreamableFile(data, { type: mimeType });
   }
 }

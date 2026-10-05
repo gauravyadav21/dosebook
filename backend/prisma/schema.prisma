@@ -83,7 +83,8 @@ model Document {
   fileName    String
   mimeType    String
   size        Int
-  storagePath String
+  // Where the file is on disk. Null when the bytes are kept in DocumentBlob (FILE_STORAGE=database).
+  storagePath String?
   status      DocumentStatus @default(UPLOADED)
   // Raw extraction output. Shown to the user for review; never read as confirmed data.
   extraction  Json?
@@ -91,8 +92,18 @@ model Document {
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   prescription Prescription?
+  blob         DocumentBlob?
 
   @@index([userId])
+}
+
+// The uploaded file itself, when it is kept in the database instead of on disk (hosts without a
+// lasting disk). A separate table, so reading or listing documents never loads file bytes.
+model DocumentBlob {
+  documentId String @id
+  data       Bytes
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 }
 
 model Doctor {

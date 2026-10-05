@@ -17,6 +17,8 @@ export default defineConfig({
       THROTTLE_LIMIT: '100000',
       AUTH_THROTTLE_LIMIT: '100000',
       CHAT_THROTTLE_LIMIT: '100000',
+      UPLOAD_THROTTLE_LIMIT: '100000',
+      FILE_STORAGE: 'disk',
       GEMINI_API_KEY: '',
     },
   },

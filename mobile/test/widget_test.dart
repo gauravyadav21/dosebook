@@ -657,6 +657,13 @@ void main() {
   });
 
   group('Upload and confirm (S1, S2, S9)', () {
+    testWidgets('warns to upload only the samples on the demo build, and says nothing of it otherwise (S13)', (tester) async {
+      await pumpScreen(tester, FakeBackend(), const UploadScreen(demo: true));
+      expect(find.text(demoUploadNote), findsOneWidget);
+      await pumpScreen(tester, FakeBackend(), const UploadScreen(demo: false));
+      expect(find.text(demoUploadNote), findsNothing);
+    });
+
     testWidgets('shows the server reason when a file is rejected and says nothing was stored', (tester) async {
       pickPrescriptionFile = () async => PickedFile('notes.docx', Uint8List.fromList([1, 2, 3]));
       final backend = FakeBackend()

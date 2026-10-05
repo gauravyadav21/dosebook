@@ -20,6 +20,8 @@ const doesNotLines = [
   'It does not prescribe or suggest new medicines',
   'It does not change a dose or replace your doctor',
 ];
+const demoUploadNote = 'Demo server. Upload only the sample prescriptions, never a real one.';
+const demoServerWaking = 'The demo server sleeps when idle and takes about a minute to wake. Try again in a moment.';
 const tagline = 'We recall, we remind, we never prescribe.';
 const recordsPrivate = 'Your records are visible only to you.';
 const sessionEnded = 'Your session ended. Sign in again.';

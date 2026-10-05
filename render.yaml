@@ -1,0 +1,35 @@
+# Render blueprint for the DoseBook demo backend. Steps: docs/05-delivery/deployment.md.
+# No secret is written here. Entries marked `sync: false` are typed into Render's dashboard.
+services:
+  - type: web
+    name: dosebook-api
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      # The host's disk is wiped on every restart, so files live in the database (ADR 0005).
+      - key: FILE_STORAGE
+        value: database
+      # Render puts one proxy in front of the service; without this the rate limit sees a single visitor.
+      - key: TRUST_PROXY
+        value: "true"
+      # Requests per minute per visitor. Lower than local defaults: this server is public and the model key is free tier.
+      - key: THROTTLE_LIMIT
+        value: "60"
+      - key: AUTH_THROTTLE_LIMIT
+        value: "5"
+      - key: CHAT_THROTTLE_LIMIT
+        value: "10"
+      - key: UPLOAD_THROTTLE_LIMIT
+        value: "4"
+      - key: JWT_EXPIRES_IN
+        value: 7d

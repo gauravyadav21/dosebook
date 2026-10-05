@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 
+import '../../api/api.dart';
 import '../../app/app_scope.dart';
 import '../../app/platform.dart';
+import '../../app/wording.dart';
+import '../../widgets/common.dart';
 import 'review_screen.dart';
 
 /// Pick a prescription photo or PDF and send it for reading (S1).
 class UploadScreen extends StatefulWidget {
-  const UploadScreen({super.key});
+  const UploadScreen({super.key, this.demo = demoBuild});
+
+  /// Shows the demo-server note. Set by the build; a parameter so tests can turn it on.
+  final bool demo;
 
   @override
   State<UploadScreen> createState() => _UploadScreenState();
@@ -44,6 +50,7 @@ class _UploadScreenState extends State<UploadScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          if (widget.demo) ...[const InfoBanner(demoUploadNote), const SizedBox(height: 16)],
           Text(
             'Photo or PDF of one prescription. JPEG, PNG or PDF, up to 10 MB.',
             style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),

@@ -4,6 +4,7 @@
 
 stages:
   - check
+  - release
 
 workflow:
   rules:
@@ -77,3 +78,30 @@ mobile:
     paths:
       - mobile/build/app/outputs/flutter-apk/app-debug.apk
     expire_in: 1 week
+
+# The APK given to judges: a release build that talks to the hosted demo backend (S13).
+# Runs on main only, after the checks pass, and only once API_BASE_URL is set under
+# Settings > CI/CD > Variables (it is an address, not a secret).
+demo-apk:
+  stage: release
+  image: ghcr.io/cirruslabs/flutter:3.38.8
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $API_BASE_URL
+  variables:
+    PUB_CACHE: $CI_PROJECT_DIR/.pub-cache
+  cache:
+    key:
+      files:
+        - mobile/pubspec.lock
+    paths:
+      - .pub-cache/
+  script:
+    - cd mobile
+    - flutter pub get
+    - flutter build apk --release --dart-define=API_BASE_URL=$API_BASE_URL --dart-define=DEMO=true
+    - cp build/app/outputs/flutter-apk/app-release.apk ../dosebook-demo.apk
+  artifacts:
+    name: dosebook-demo-apk
+    paths:
+      - dosebook-demo.apk
+    expire_in: 60 days

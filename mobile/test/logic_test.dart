@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dosebook/api/api.dart';
 import 'package:dosebook/api/models.dart';
 import 'package:dosebook/app/format.dart';
+import 'package:dosebook/app/wording.dart';
 import 'package:dosebook/features/upload/schedule_editor.dart';
 import 'package:dosebook/reminders/reminder_plan.dart';
 
@@ -224,6 +225,17 @@ void main() {
       final api = Api(client: backend.client, baseUrl: 'http://test')..onUnauthorized = () => signedOut = true;
       await expectLater(api.login('a@example.com', 'wrong-password'), throwsA(isA<ApiException>()));
       expect(signedOut, isFalse);
+    });
+
+    test('says the demo server may be waking when it cannot be reached in the demo build (S13)', () async {
+      final backend = FakeBackend()..on('GET /notes', (_) => throw Exception('socket closed'));
+      final api = Api(client: backend.client, baseUrl: 'http://test', demo: true);
+      await expectLater(
+        api.notes(),
+        throwsA(isA<ApiException>().having((e) => e.message, 'message', allOf(contains('Could not reach the server'), contains(demoServerWaking)))),
+      );
+      final plain = Api(client: backend.client, baseUrl: 'http://test', demo: false);
+      await expectLater(plain.notes(), throwsA(isA<ApiException>().having((e) => e.message, 'message', isNot(contains('demo')))));
     });
 
     test('reports a network failure in plain words', () async {
