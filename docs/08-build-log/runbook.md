@@ -61,6 +61,17 @@ set -a && . backend/.env && set +a
 curl -s "https://generativelanguage.googleapis.com/v1beta/models?pageSize=200" -H "x-goog-api-key: ${GEMINI_API_KEY}" | grep '"name"'
 ```
 
+## Review by a second model
+```
+nvm use 20
+node scripts/gemini-review.mjs            # all six batches
+node scripts/gemini-review.mjs chat app   # only these
+```
+Reads the key from `backend/.env`; sends only files under `backend/src` and `mobile/lib`. Output: `docs/04-ai/reviews/`. If a batch says "Not reviewed", the models were over quota; run that batch again later.
+
+## Emulator: choosing a file in the system picker by script
+Taps on a file are ignored. Open Downloads from the side menu, move focus with the arrow keys (`adb shell input keyevent 19/20/21/22`), read which item is focused from a UI dump, then press Enter (`keyevent 66`).
+
 ## Checks
 ```
 cd backend && npm run lint && npm run build && npm test && npm run test:e2e

@@ -75,6 +75,15 @@ Give each tool the same task, the same prompt and the same context files. Start 
 
 (Add a sheet below for each new trial.)
 
+### 5 Oct 2026 · Gemini API (free tier) · gemini-flash-lite-latest · T1 Review
+- **How:** `node scripts/gemini-review.mjs`. Six batches of source files (backend by area, and the app's client, session and sign-in code), each with the project's `review-diff` and `security-check` skills, the coding standards and the stories' acceptance criteria. Asked for JSON findings with file and line.
+- **Result:** 9 findings in about a minute. After checking each against the code: 2 real and fixed, 1 real and left, 1 plainly wrong, 2 fair but not exploitable, 3 not faults. Full text and triage: `docs/04-ai/reviews/2026-10-05-gemini-review.md`.
+- **Good:** found a real gap in the chat's dosage rule that 224 unit tests had not (questions like "how do I take it" with no number). Fast, free, and easy to rerun. Returning JSON with file and line made the triage quick.
+- **Bad:** one finding quoted a line that does not exist and reported a missing check that is there. Two findings argued with themselves and ended as "verify that...". It reported nothing at all for auth, upload and confirm, which is more likely shallow reading than clean code.
+- **Limits met:** the first-choice model did not answer, so every batch was reviewed by the lite fallback. The free tier may train on what is sent, so only our own code with fake data went.
+- **Lesson:** a second model is worth having as a source of leads, not as a verdict. Every finding has to be checked against the code by someone who can read it.
+- **To compare like for like:** paste the same prompt (printed by the script's `prompt()` function) and the same files into another tool, and fill a sheet below.
+
 ## Summary: pros and cons per tool
 Fill a row only after at least one trial. Empty means not tried.
 

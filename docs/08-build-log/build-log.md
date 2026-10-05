@@ -92,6 +92,16 @@ Asked for by the participant: light and dark mode, and intro screens that show a
 - Intro: four pages, shown by `_Root` until a flag held in memory is set. Page 4 reuses the acknowledgement's wording from one shared list, so the two cannot drift apart.
 - Result: mobile 102 tests, analyze clean, debug APK built and run on the Pixel emulator. Backend untouched.
 
+### Review by a second model, live read, device run (5 Oct, night)
+The participant asked to finish "this week's" list in one go. What only a person can do was prepared, not done.
+- S12 merged to `main` after the participant reported a green pipeline.
+- **Second-model review:** a script sends the code in six batches to Gemini with the project's own review skills. 9 findings; each checked against the code; 2 real and fixed (dosage questions with no number; a planner crash on an unreadable time), 1 plainly wrong. All batches were answered by the lite fallback model.
+- **Live read:** the three fake samples read by the live model under neutral names: 32 of 32 fields correct. Clean typed samples only.
+- **Device run:** upload through the system file picker, confirm, Timeline, Today, Share and Call all worked on the Pixel emulator for the first time. The picker needs keyboard focus and Enter; it ignores scripted taps. One fault found and fixed: a misleading refusal when the medicine lookup timed out.
+- **For the participant:** `docs/06-qa/human-review.md` lists every commit with where to look, the AI agent's unreviewed defaults, and four questions the reviews raised.
+- Not done: trials of Copilot or other tools (they need the participant's accounts); the human read-through itself.
+- Result: backend 241 unit + 213 end-to-end, mobile 103 tests.
+
 ## Size of the work, from the session record
 Read from the raw files on 4 Oct; the second session is still open, so its numbers keep rising.
 

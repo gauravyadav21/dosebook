@@ -127,6 +127,12 @@ Three different causes, in order. (1) "could not read Username": the command was
 **Can the AI agent push?** (5 Oct 2026)
 Only after the participant has signed in once from Terminal with the Keychain helper set for this repo. The token is never given to the agent.
 
+**Which of "this week's" tasks could the AI agent do, and which not?** (5 Oct 2026)
+Done by the agent: a review by a second model (Gemini, scripted), a live read of the fake samples, an end-to-end run on the emulator, and the fixes that came out of them. Prepared but not done: the human read-through (`docs/06-qa/human-review.md`). Not possible for the agent: trials of Copilot and other tools in the participant's own accounts.
+
+**How do I rerun the second-model review?** (5 Oct 2026)
+`node scripts/gemini-review.mjs` from the repo root with Node 20, or name batches: `node scripts/gemini-review.mjs chat app`. It writes `docs/04-ai/reviews/<date>-gemini-review.md`. Add the triage by hand underneath.
+
 ## Record keeping
 
 **Are you saving all details of how this was built?**

@@ -4,8 +4,8 @@ Everything not done or not verified, in one list. Status on 4 Oct 2026. Update t
 
 ## Must happen before the work counts
 1. **Commit.** Done on 5 Oct 2026 as 12 story-sized commits (see `commit-plan.md`); pushed to GitLab the same night. Before that: nothing was committed. The roadmap submits the full Git history and scores the AI workflow from it. Commit story by story, following `commit-plan.md`.
-2. **Human review of every diff.** Not done. Required by the roadmap and by `AGENTS.md`.
-3. **Review by a second model** (`review-diff` skill). Not done.
+2. **Human review of every diff.** Not done. Required by the roadmap and by `AGENTS.md`. The sheet for it is `docs/06-qa/human-review.md`.
+3. **Review by a second model** (`review-diff` skill). Done once on 5 Oct 2026 with Gemini's free tier (`docs/04-ai/reviews/`): 9 findings, 2 real and fixed. Only the lite fallback model answered, so repeat it when the first model is available, and after each new story. No review by Copilot or GitLab Duo yet.
 4. **Check the tests against the stories.** The same agent wrote code and tests in one session, tests alongside rather than first.
 5. **Get CI green.** Pushed on 5 Oct 2026. `.gitlab-ci.yml` (secret scan, backend with a Postgres service, mobile with an APK build) was added on branch `ci/gitlab`; its first pipeline was green (seen by the participant) and it was merged to `main` the same night. The AI agent cannot read the pipeline result (private project, no API token), so the participant checks it under Build → Pipelines. `.github/workflows/ci.yml` is kept for a possible GitHub mirror and does not run on GitLab.
 
