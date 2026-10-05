@@ -133,6 +133,12 @@ Done by the agent: a review by a second model (Gemini, scripted), a live read of
 **How do I rerun the second-model review?** (5 Oct 2026)
 `node scripts/gemini-review.mjs` from the repo root with Node 20, or name batches: `node scripts/gemini-review.mjs chat app`. It writes `docs/04-ai/reviews/<date>-gemini-review.md`. Add the triage by hand underneath.
 
+**How will judges try it?** (6 Oct 2026)
+An Android APK built by the pipeline, talking to a backend on Render with a Neon database. Steps for the participant: `docs/05-delivery/deployment.md`. Reasons and trade-offs: ADR 0005.
+
+**Why are uploaded files in the database on the demo?** (6 Oct 2026)
+Free hosts wipe their disk at every restart. The database survives. It is the wrong place at scale and the ADR says so; the code hides the choice behind one interface.
+
 ## Record keeping
 
 **Are you saving all details of how this was built?**

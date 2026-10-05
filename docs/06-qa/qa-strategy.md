@@ -21,3 +21,8 @@ One pass as a new fake user, on the build that includes the fixes above.
 - How the file picker was driven: it ignores scripted taps on a file. Moving keyboard focus with the arrow keys and pressing Enter works. A first attempt picked `headache.png` rather than the intended file; the run continued with it.
 - Not done on the device: the "Same doctor?" question (needs a second upload), editing and deleting a note, profile and allergies, feedback chips, stopping a course, own reminders, a real notification firing, and the medicine lookup succeeding (it timed out). These remain covered by widget and end-to-end tests only.
 - Observation, not changed: the review screen shows "3 days" as read, but the course length on the schedule screen starts empty and has to be typed again. For the participant to decide whether it should be pre-filled.
+
+## S13 (6 Oct 2026): judge access
+- Tests first: 12 end-to-end tests (five storage cases under both `disk` and `database`, per-visitor rate limit behind a proxy, the upload limit) and 2 app tests. Six of the 12 failed before the code; the other six describe behaviour disk storage already had. Both app tests failed before the code.
+- Run by the AI agent on the development Mac with the container's start command and settings: migrations applied, upload, byte-identical download, bytes found in `DocumentBlob`, fourth upload in a minute answered 429. A release APK built with a placeholder address.
+- Not tested: the Dockerfile has never been built (no Docker on the Mac). Nothing is deployed, so the hosted server, TLS to Neon, the wake-up message against a sleeping server, the pipeline's `demo-apk` job and the release APK on a device are all untested.

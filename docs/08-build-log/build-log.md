@@ -102,6 +102,17 @@ The participant asked to finish "this week's" list in one go. What only a person
 - Not done: trials of Copilot or other tools (they need the participant's accounts); the human read-through itself.
 - Result: backend 241 unit + 213 end-to-end, mobile 103 tests.
 
+### S13: judge access (6 Oct)
+The participant chose: an APK plus a hosted backend (no web app), Render and Neon free tiers, live Gemini with tight limits, uploaded files in the database.
+- Free-plan pages read first and recorded with the date in `deployment.md`.
+- Files: one `FileStore` interface, disk by default and database for the demo; new table and migration; the same five tests run against both.
+- Hosting: `backend/Dockerfile`, `render.yaml` with no secret in it, one trusted proxy hop so rate limits count per visitor, a separate limit on uploads.
+- App: the demo build says to upload samples only, and says the server may be waking when it cannot be reached.
+- Pipeline: a `demo-apk` job on `main` that builds the release APK once the server address is set as a CI variable.
+- Tested locally by running the backend the way the container will (migrate, database storage, proxy setting): upload, byte-identical download, the bytes in the new table, the fourth upload in a minute refused. A release APK builds.
+- Not possible here: building the Dockerfile (Docker is not installed), and the deploy itself, which needs the participant's accounts.
+- Result: backend 241 unit + 225 end-to-end, mobile 105 tests.
+
 ## Size of the work, from the session record
 Read from the raw files on 4 Oct; the second session is still open, so its numbers keep rising.
 

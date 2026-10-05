@@ -100,5 +100,9 @@ gitleaks dir backend/src mobile/lib docs
 | `git push`: "HTTP Basic: Access denied" | Account password used, or a token without write scope | Personal access token with `write_repository` as the password. Clear a bad saved one: `printf "protocol=https\nhost=gitlab.com\n\n" \| git credential-osxkeychain erase` |
 | `git push`: "rejected (fetch first)" | The remote has a commit you do not have (GitLab's README) | `git fetch origin`, look at it, `git rebase origin/main`, push. No force |
 | CI does not start on GitLab | Only `.github/workflows/ci.yml` exists | GitLab reads `.gitlab-ci.yml` |
+| Code cannot see a new table after `prisma migrate dev` (`PrismaClientValidationError`, or a build error on the new model) | The client was not regenerated | `npx prisma generate` |
+| Server refuses to start: "FILE_STORAGE must be disk or database" | Typo in the setting | Fix the value |
+| Everyone is rate limited together on the host | The server sees only the proxy's address | `TRUST_PROXY=true` (only behind a proxy) |
+| First request to the demo takes a minute | Free host was asleep | Wait and retry |
 | Figma tools missing | Server registered but not signed in | `/mcp` → figma → authenticate |
 | Figma refuses calls | Starter plan tool-call limit | Wait for reset; batch work into few calls |

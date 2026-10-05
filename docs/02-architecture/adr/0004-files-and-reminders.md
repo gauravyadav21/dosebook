@@ -8,6 +8,7 @@ Uploaded prescriptions must be stored. Doses must be reminded on the phone. Queu
 ## Decision
 
 ### Files
+- On the hosted demo files are kept in the database instead; see ADR 0005. The rest of this section describes the default, used in development.
 - Stored on the server's disk under `UPLOAD_DIR/<userId>/<random>.<ext>`. The original file name is kept only as a label in the database and never becomes part of a path.
 - Type is decided from the file's first bytes (JPEG, PNG, PDF). The name and the client's MIME type are not trusted. Limit 10 MB.
 - A file is served only through an authenticated route that checks the owner.

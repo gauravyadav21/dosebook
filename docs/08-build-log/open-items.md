@@ -31,7 +31,8 @@ From `docs/09-playbook/standing-out.md`. None of these is done yet.
 - Obsidian vault and slide deck were never opened in Obsidian by the agent.
 
 ## Not built
-- Web app and a hosted link for judges; deployment of backend and database; object storage for uploads.
+- Deployment: prepared on 6 Oct 2026 (container, Render blueprint, files in the database, pipeline job for the judges' APK) and tested locally; **not deployed yet**. The participant's steps are in `docs/05-delivery/deployment.md`. The Dockerfile itself has never been built (no Docker on the Mac); Render's build is its first test.
+- Web app (dropped by decision: judges get an APK); object storage for uploads; a kept signing key.
 - Chat history is not saved between visits to the screen.
 - Password reset, refresh tokens; token in secure storage.
 - Email verification at sign-up (future scope by decision, 5 Oct 2026).

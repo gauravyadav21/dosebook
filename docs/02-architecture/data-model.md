@@ -23,6 +23,7 @@ Every table except `MedicineInfo` has a `userId`. Every query filters on it, so 
 - **Dose text is free text.** The app stores what the user confirmed or typed and never parses, corrects or computes a dose.
 - **Reminders are not stored.** The server stores the schedule and the marks. Today's list and the phone's notifications are computed from them.
 - **Slots**: MORNING, NOON, EVENING, NIGHT. The phone maps them to 8:00, 13:00, 18:00 and 21:00 for notifications.
+- **Uploaded files** are on disk by default (`Document.storagePath`). With `FILE_STORAGE=database` the bytes are in `DocumentBlob`, one row per document, deleted with it; `storagePath` is then empty (ADR 0005).
 
 ## Course maths
 A dose is due on date `d` when `startDate <= d < end`, where `end` is the earlier of `startDate + courseDays` and the stop date. Planned doses for a course are days times doses per day, shortened when stopped early. Code: `backend/src/doses/doses.logic.ts`, tests beside it.

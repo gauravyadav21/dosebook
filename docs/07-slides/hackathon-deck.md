@@ -68,7 +68,8 @@ One user: an adult managing their own minor illnesses.
 
 - Flutter (mobile + web) to NestJS + Prisma + PostgreSQL
 - OpenAPI generated, validated input, auth on every route, rate limiting
-- Two trade-offs: TBD
+- Trade-off 1: demo files live in PostgreSQL, not object storage: free, survives restarts, wrong at scale (ADR 0005)
+- Trade-off 2: chat is rule based, not a model: it cannot invent a medicine, but it only understands what its rules cover (ADR 0003)
 
 ---
 
