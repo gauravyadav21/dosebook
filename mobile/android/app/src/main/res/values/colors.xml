@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand colours for the launcher icon and launch screen. The values Flutter derives from the indigo seed for primary and
+         primaryContainer (read from ColorScheme.fromSeed on 5 Oct 2026), so the launch screen and the
+         Flutter splash match. Inside Flutter the theme stays the source. -->
+    <color name="brand">#515B92</color>
+    <color name="brand_light">#DEE0FF</color>
+</resources>

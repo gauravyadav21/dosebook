@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launch screen shown by Android before Flutter draws: brand colour with the logo in the centre.
+     Flutter then shows the same picture in lib/features/splash/splash_screen.dart. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/brand" />
+    <item
+        android:width="144dp"
+        android:height="144dp"
+        android:drawable="@drawable/ic_logo_foreground"
+        android:gravity="center" />
+</layer-list>
