@@ -1,0 +1,10 @@
+node_modules
+# Keep environment variables out of version control
+.env
+
+/src/generated
+
+# Local dev database cluster and uploaded files
+/.pgdata
+/uploads
+/.e2e-uploads

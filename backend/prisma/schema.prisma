@@ -1,0 +1,233 @@
+// Data model for DoseBook. See docs/02-architecture/data-model.md.
+// Every row is owned by a user; services always filter by userId.
+// Calendar dates are stored as "YYYY-MM-DD" strings so they never shift with time zones.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum DocumentStatus {
+  UPLOADED
+  EXTRACTED
+  EXTRACTION_FAILED
+  CONFIRMED
+}
+
+enum MedicineSource {
+  PRESCRIPTION
+  SELF
+}
+
+enum FeedbackValue {
+  WORKED
+  DID_NOT_WORK
+  SIDE_EFFECT
+}
+
+enum FoodTiming {
+  BEFORE_FOOD
+  AFTER_FOOD
+}
+
+enum Sex {
+  FEMALE
+  MALE
+  OTHER
+}
+
+enum DoseStatus {
+  TAKEN
+  SKIPPED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  // Version of the first-run "what this app is not" text the user acknowledged (S8).
+  ackVersion   Int?
+  ackAt        DateTime?
+  createdAt    DateTime @default(now())
+
+  // Profile (S10): the user's own record of themselves. All optional; the app never advises from it.
+  name           String?
+  dateOfBirth    String?
+  sex            Sex?
+  heightCm       Float?
+  weightKg       Float?
+  bloodGroup     String?
+  emergencyName  String?
+  emergencyPhone String?
+  conditions     String?
+
+  notes         Note[]
+  documents     Document[]
+  doctors       Doctor[]
+  prescriptions Prescription[]
+  medicines     Medicine[]
+  schedules     Schedule[]
+  doseLogs      DoseLog[]
+  allergies     Allergy[]
+}
+
+model Document {
+  id          String         @id @default(uuid())
+  userId      String
+  fileName    String
+  mimeType    String
+  size        Int
+  storagePath String
+  status      DocumentStatus @default(UPLOADED)
+  // Raw extraction output. Shown to the user for review; never read as confirmed data.
+  extraction  Json?
+  createdAt   DateTime       @default(now())
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prescription Prescription?
+
+  @@index([userId])
+}
+
+model Doctor {
+  id             String   @id @default(uuid())
+  userId         String
+  name           String
+  specialty      String?
+  registrationNo String?
+  phone          String?
+  availability   String?
+  createdAt      DateTime @default(now())
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prescriptions Prescription[]
+
+  @@unique([userId, registrationNo])
+  @@index([userId])
+}
+
+model Prescription {
+  id         String   @id @default(uuid())
+  userId     String
+  documentId String   @unique
+  doctorId   String?
+  condition  String
+  date       String
+  createdAt  DateTime @default(now())
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document  Document   @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  // Deleting a doctor card keeps the prescription (S9).
+  doctor    Doctor?    @relation(fields: [doctorId], references: [id], onDelete: SetNull)
+  medicines Medicine[]
+
+  @@index([userId, date])
+}
+
+model Medicine {
+  id             String         @id @default(uuid())
+  userId         String
+  prescriptionId String?
+  source         MedicineSource
+  name           String
+  // Free text exactly as confirmed (prescription) or as typed by the user (self). Never corrected by the app.
+  dose           String?
+  frequency      String?
+  duration       String?
+  feedback       FeedbackValue?
+  // Order of the medicine on its prescription.
+  position       Int            @default(0)
+  createdAt      DateTime       @default(now())
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prescription Prescription? @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  schedule     Schedule?
+  doseLogs     DoseLog[]
+
+  @@index([userId, source])
+}
+
+model Schedule {
+  id          String      @id @default(uuid())
+  userId      String
+  medicineId  String      @unique
+  // Named slots: MORNING, NOON, EVENING, NIGHT.
+  slots       String[]
+  // Clock times "HH:mm"; only for the user's own reminders on self-added medicines.
+  times       String[]
+  food        FoodTiming?
+  dosesPerDay Int
+  // Null means no end date (own reminders only).
+  courseDays  Int?
+  startDate   String
+  // First date on which no dose is due any more, set when the user stops the course.
+  stoppedOn   String?
+  createdAt   DateTime    @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  medicine Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model DoseLog {
+  id         String     @id @default(uuid())
+  userId     String
+  medicineId String
+  date       String
+  // Slot name or "HH:mm", matching Schedule.slots / Schedule.times.
+  slot       String
+  status     DoseStatus
+  markedAt   DateTime   @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  medicine Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
+
+  @@unique([medicineId, date, slot])
+  @@index([userId, date])
+}
+
+model Allergy {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+}
+
+/// Free-text note written by the user (S7). No structure, no medical meaning to the app.
+model Note {
+  id        String   @id @default(uuid())
+  userId    String
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// General information about a medicine, fetched once from a model and reused for every user (S5).
+/// Not personal data: it holds no user id and nothing from a user's message except the medicine name.
+model MedicineInfo {
+  id        String   @id @default(uuid())
+  // Lower-cased, trimmed name used for lookup.
+  nameKey   String   @unique
+  name      String
+  // What the medicine is usually prescribed for.
+  summary   String
+  // How to keep (store) it. Missing on rows saved before this was added, or when nothing safe came back.
+  storage   String?
+  source    String
+  createdAt DateTime @default(now())
+}
