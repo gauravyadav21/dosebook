@@ -33,9 +33,9 @@ describe('S6 dose reminders and Today (e2e)', () => {
     const doses = await today(user, '2026-10-01');
     expect(doses.map((d) => `${d.name}:${d.slot}`)).toEqual([
       'Paracetamol:MORNING',
-      'Paracetamol:NOON',
-      'Paracetamol:NIGHT',
-      'Cetirizine:NIGHT',
+      'Paracetamol:LUNCH',
+      'Paracetamol:DINNER',
+      'Cetirizine:DINNER',
     ]);
     expect(doses[0]).toMatchObject({
       dose: '500 mg, 1 tablet',
@@ -69,12 +69,12 @@ describe('S6 dose reminders and Today (e2e)', () => {
 
     const taken = await mark(user, { medicineId, date: '2026-10-01', slot: 'MORNING', status: 'TAKEN' }).expect(200);
     expect(taken.body).toMatchObject({ status: 'TAKEN', slot: 'MORNING' });
-    await mark(user, { medicineId, date: '2026-10-01', slot: 'NOON', status: 'SKIPPED' }).expect(200);
+    await mark(user, { medicineId, date: '2026-10-01', slot: 'LUNCH', status: 'SKIPPED' }).expect(200);
 
     let doses = await today(user, '2026-10-01');
     expect(doses.slice(0, 3).map((d) => d.status)).toEqual(['TAKEN', 'SKIPPED', 'DUE']);
 
-    await mark(user, { medicineId, date: '2026-10-01', slot: 'NOON', status: 'TAKEN' }).expect(200);
+    await mark(user, { medicineId, date: '2026-10-01', slot: 'LUNCH', status: 'TAKEN' }).expect(200);
     doses = await today(user, '2026-10-01');
     expect(doses[1].status).toBe('TAKEN');
 
@@ -84,7 +84,7 @@ describe('S6 dose reminders and Today (e2e)', () => {
   });
 
   it.each([
-    ['a slot not in the schedule', { date: '2026-10-01', slot: 'EVENING', status: 'TAKEN' }],
+    ['a slot not in the schedule', { date: '2026-10-01', slot: '09:30', status: 'TAKEN' }],
     ['a date after the course', { date: '2026-10-06', slot: 'MORNING', status: 'TAKEN' }],
     ['a date before the course', { date: '2026-09-30', slot: 'MORNING', status: 'TAKEN' }],
     ['an invalid status', { date: '2026-10-01', slot: 'MORNING', status: 'MAYBE' }],
@@ -125,15 +125,77 @@ describe('S6 dose reminders and Today (e2e)', () => {
     const edited = await http()
       .patch(`/medicines/${id}/schedule`)
       .set(user.auth)
-      .send(schedule({ slots: ['MORNING', 'NIGHT'], dosesPerDay: 2, courseDays: 7 }))
+      .send(schedule({ slots: ['MORNING', 'DINNER'], dosesPerDay: 2, courseDays: 7 }))
       .expect(200);
-    expect(edited.body.schedule).toMatchObject({ slots: ['MORNING', 'NIGHT'], courseDays: 7, endDate: '2026-10-08' });
+    expect(edited.body.schedule).toMatchObject({ slots: ['MORNING', 'DINNER'], courseDays: 7, endDate: '2026-10-08' });
     const doses = await today(user, '2026-10-07');
-    expect(doses.map((d) => `${d.name}:${d.slot}`)).toEqual(['Paracetamol:MORNING', 'Paracetamol:NIGHT']);
+    expect(doses.map((d) => `${d.name}:${d.slot}`)).toEqual(['Paracetamol:MORNING', 'Paracetamol:DINNER']);
+  });
+
+  it('edits a course with a chosen time: Today shows it at that time, grouped by the part of the day (S14)', async () => {
+    const user = await signUp(app);
+    const p = await confirmed(app, user);
+    const id = p.medicines[0].id;
+    const edited = await http()
+      .patch(`/medicines/${id}/schedule`)
+      .set(user.auth)
+      .send(schedule({ slots: ['LUNCH'], times: ['19:15'], dosesPerDay: 2 }))
+      .expect(200);
+    expect(edited.body.schedule).toMatchObject({ slots: ['LUNCH'], times: ['19:15'] });
+    const doses = (await today(user, '2026-10-02')).filter((d) => d.name === 'Paracetamol');
+    expect(doses.map((d) => `${d.slot}:${d.group}`)).toEqual(['LUNCH:LUNCH', '19:15:DINNER']);
+    const phone = await http().get('/doses/schedules').query({ date: '2026-10-02' }).set(user.auth).expect(200);
+    expect(phone.body[0].slots).toEqual(['LUNCH', '19:15']);
+  });
+
+  it('allows five or ten doses a day, several in the same part of the day (S14)', async () => {
+    const user = await signUp(app);
+    const p = await confirmed(app, user);
+    const id = p.medicines[0].id;
+    const five = ['07:00', '09:00', '11:00', '13:00', '15:00'];
+    const edited = await http()
+      .patch(`/medicines/${id}/schedule`)
+      .set(user.auth)
+      .send(schedule({ slots: [], times: five, dosesPerDay: 5 }))
+      .expect(200);
+    expect(edited.body.schedule).toMatchObject({ times: five, dosesPerDay: 5 });
+    const doses = (await today(user, '2026-10-02')).filter((d) => d.name === 'Paracetamol');
+    expect(doses.map((d) => d.slot)).toEqual(five);
+    expect(doses.map((d) => d.group)).toEqual(['MORNING', 'MORNING', 'LUNCH', 'LUNCH', 'LUNCH']);
+  });
+
+  it('confirms a prescription with a chosen time and keeps it (S14)', async () => {
+    const user = await signUp(app);
+    const p = await confirmed(app, user, {
+      medicines: [{ name: 'Metformin', dose: '500 mg', schedule: schedule({ slots: ['DINNER'], times: ['07:30'], dosesPerDay: 2 }) }],
+    });
+    expect(p.medicines[0].schedule).toMatchObject({ slots: ['DINNER'], times: ['07:30'] });
+    expect((await today(user, '2026-10-01')).map((d) => `${d.slot}:${d.group}`)).toEqual(['07:30:MORNING', 'DINNER:DINNER']);
+  });
+
+  it("keeps a dose marked today when its time is changed (S14)", async () => {
+    const user = await signUp(app);
+    const p = await confirmed(app, user);
+    const id = p.medicines[0].id;
+    const day = new Date().toISOString().slice(0, 10);
+    await http().patch(`/medicines/${id}/schedule`).set(user.auth).send(schedule({ startDate: day, courseDays: 5 })).expect(200);
+    await mark(user, { medicineId: id, date: day, slot: 'MORNING', status: 'TAKEN' }).expect(200);
+
+    await http()
+      .patch(`/medicines/${id}/schedule`)
+      .set(user.auth)
+      .send(schedule({ slots: ['LUNCH', 'DINNER'], times: ['07:30'], dosesPerDay: 3, startDate: day, courseDays: 5 }))
+      .expect(200);
+    const doses = (await today(user, day)).filter((d) => d.name === 'Paracetamol');
+    expect(doses.map((d) => `${d.slot}:${d.status}`)).toEqual(['07:30:TAKEN', 'LUNCH:DUE', 'DINNER:DUE']);
   });
 
   it.each([
-    ['invalid slot', schedule({ slots: ['LUNCH'], dosesPerDay: 1 })],
+    ['an old slot name', schedule({ slots: ['NOON'], dosesPerDay: 1 })],
+    ['a time that is not HH:mm', schedule({ slots: [], times: ['7.30'], dosesPerDay: 1 })],
+    ['two doses at the same time', schedule({ slots: ['MORNING'], times: ['08:00'], dosesPerDay: 2 })],
+    ['no time of day at all', schedule({ slots: [], dosesPerDay: 1 })],
+    ['thirteen doses', schedule({ slots: [], times: Array.from({ length: 13 }, (_, i) => `${String(i + 6).padStart(2, '0')}:00`), dosesPerDay: 13 })],
     ['zero doses', schedule({ dosesPerDay: 0 })],
     ['course too long', schedule({ courseDays: 1000 })],
     ['doses not matching slots', schedule({ dosesPerDay: 1 })],
@@ -159,7 +221,7 @@ describe('S6 dose reminders and Today (e2e)', () => {
     expect(during.body).toHaveLength(2);
     expect(during.body[0]).toMatchObject({
       name: 'Paracetamol',
-      slots: ['MORNING', 'NOON', 'NIGHT'],
+      slots: ['MORNING', 'LUNCH', 'DINNER'],
       startDate: '2026-10-01',
       endDate: '2026-10-06',
       origin: 'AS_PRESCRIBED',

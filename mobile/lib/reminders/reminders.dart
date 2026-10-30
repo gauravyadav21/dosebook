@@ -39,6 +39,17 @@ class LocalReminders implements Reminders {
     iOS: DarwinNotificationDetails(),
   );
 
+  static const _noteDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      'notes',
+      'Note reminders',
+      channelDescription: 'Reminders you set on your own notes',
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
+    ),
+    iOS: DarwinNotificationDetails(),
+  );
+
   Future<void> _init() async {
     if (_ready) return;
     tzdata.initializeTimeZones();
@@ -79,9 +90,36 @@ class LocalReminders implements Reminders {
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         );
       }
+      await _syncNotes(api, now);
     } catch (e) {
       // Reminders are best effort: the Today list always shows what is due.
       debugPrint('Reminder sync failed: $e');
+    }
+  }
+
+  /// Note reminders (S15): one repeating notification per note, so the phone keeps firing it without the app being opened.
+  /// Best effort on its own, so a failure here never takes the dose reminders down with it.
+  Future<void> _syncNotes(Api api, DateTime now) async {
+    try {
+      final notes = await api.notes();
+      for (final r in planNoteReminders(notes, now)) {
+        await _plugin.zonedSchedule(
+          id: r.id,
+          title: r.title,
+          body: r.body,
+          scheduledDate: tz.TZDateTime.from(r.firstAt.toUtc(), tz.UTC),
+          notificationDetails: _noteDetails,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          matchDateTimeComponents: switch (r.repeat) {
+            NoteRepeat.once => null,
+            NoteRepeat.daily => DateTimeComponents.time,
+            NoteRepeat.weekly => DateTimeComponents.dayOfWeekAndTime,
+            NoteRepeat.monthly => DateTimeComponents.dayOfMonthAndTime,
+          },
+        );
+      }
+    } catch (e) {
+      debugPrint('Note reminder sync failed: $e');
     }
   }
 

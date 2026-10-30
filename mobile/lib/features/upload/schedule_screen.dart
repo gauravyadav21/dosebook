@@ -95,6 +95,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Confirm schedule')),
       body: ListView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.all(16),
         children: [
           for (final (i, m) in medicines.indexed) ...[

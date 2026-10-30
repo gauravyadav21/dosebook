@@ -15,9 +15,12 @@ import { ApiBearerAuth, ApiProperty, ApiPropertyOptional, ApiTags } from '@nestj
 import { IsEnum, IsOptional, ValidateIf } from 'class-validator';
 import { UserId } from '../auth/auth.decorators.js';
 import { IsCalendarDate, todayUtc } from '../common/dates.js';
+import { slotGroupOf } from '../common/slots.js';
 import { FeedbackValue } from '../generated/prisma/enums.js';
 import { medicineInclude, toMedicineView } from '../prescriptions/prescriptions.views.js';
+import { dailySlots } from '../doses/doses.logic.js';
 import { ScheduleDto } from '../prescriptions/schedule.dto.js';
+import { scheduleProblem } from '../prescriptions/schedule.rules.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 export class FeedbackDto {
@@ -75,18 +78,33 @@ export class MedicinesController {
     if (medicine.source !== 'PRESCRIPTION' || !medicine.schedule) {
       throw new BadRequestException('This medicine has no prescribed course. Edit your own reminder in Notes.');
     }
-    if (dto.dosesPerDay !== dto.slots.length) {
-      throw new BadRequestException('Doses per day must match the number of times of day chosen');
-    }
-    await this.prisma.schedule.update({
-      where: { medicineId: id },
-      data: {
-        slots: dto.slots,
-        food: dto.food,
-        dosesPerDay: dto.dosesPerDay,
-        courseDays: dto.courseDays,
-        startDate: dto.startDate ?? medicine.schedule.startDate,
-      },
+    const times = dto.times ?? [];
+    const problem = scheduleProblem(dto.slots, times, dto.dosesPerDay);
+    if (problem) throw new BadRequestException(problem);
+    const before = dailySlots(medicine.schedule);
+    const after = dailySlots({ ...medicine.schedule, slots: dto.slots, times });
+    const today = todayUtc();
+    await this.prisma.$transaction(async (tx) => {
+      await tx.schedule.update({
+        where: { medicineId: id },
+        data: {
+          slots: dto.slots,
+          times,
+          food: dto.food,
+          dosesPerDay: dto.dosesPerDay,
+          courseDays: dto.courseDays,
+          startDate: dto.startDate ?? medicine.schedule!.startDate,
+        },
+      });
+      // A dose already marked today stays marked when its time moves (S14): re-key it to the new time of that part of the day.
+      for (const slot of before.filter((b) => !after.includes(b))) {
+        const log = await tx.doseLog.findUnique({ where: { medicineId_date_slot: { medicineId: id, date: today, slot } } });
+        const target = after.find((a) => !before.includes(a) && slotGroupOf(a) === slotGroupOf(slot));
+        if (!log || !target) continue;
+        const clash = await tx.doseLog.findUnique({ where: { medicineId_date_slot: { medicineId: id, date: today, slot: target } } });
+        if (clash) await tx.doseLog.delete({ where: { id: log.id } });
+        else await tx.doseLog.update({ where: { id: log.id }, data: { slot: target } });
+      }
     });
     return toMedicineView(await this.prisma.medicine.findUniqueOrThrow({ where: { id }, include: medicineInclude }));
   }

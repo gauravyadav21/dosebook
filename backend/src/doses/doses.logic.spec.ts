@@ -2,7 +2,7 @@ import { slotGroupOf } from '../common/slots.js';
 import { dailySlots, endDateExclusive, isDueOn, type ScheduleLike, totalDoses } from './doses.logic.js';
 
 const course = (overrides: Partial<ScheduleLike> = {}): ScheduleLike => ({
-  slots: ['NIGHT', 'MORNING'],
+  slots: ['DINNER', 'MORNING'],
   times: [],
   courseDays: 5,
   startDate: '2026-10-01',
@@ -49,14 +49,18 @@ describe('isDueOn', () => {
 });
 
 describe('dailySlots', () => {
-  it('orders named slots by time of day, then clock times', () => {
-    expect(dailySlots(course({ slots: ['NIGHT', 'MORNING', 'NOON'], times: ['21:30', '07:15'] }))).toEqual([
-      'MORNING',
-      'NOON',
-      'NIGHT',
+  it('orders doses by clock time, a named slot counting at its default time', () => {
+    expect(dailySlots(course({ slots: ['DINNER', 'MORNING', 'LUNCH'], times: ['21:30', '07:15'] }))).toEqual([
       '07:15',
+      'MORNING',
+      'LUNCH',
+      'DINNER',
       '21:30',
     ]);
+  });
+
+  it('a chosen time can come before or between the named slots', () => {
+    expect(dailySlots(course({ slots: ['LUNCH'], times: ['19:15', '06:00'] }))).toEqual(['06:00', 'LUNCH', '19:15']);
   });
 });
 
@@ -80,11 +84,11 @@ describe('slotGroupOf', () => {
     ['MORNING', 'MORNING'],
     ['06:00', 'MORNING'],
     ['10:59', 'MORNING'],
-    ['11:00', 'NOON'],
-    ['15:59', 'NOON'],
-    ['16:00', 'EVENING'],
-    ['20:00', 'NIGHT'],
-    ['23:59', 'NIGHT'],
+    ['11:00', 'LUNCH'],
+    ['15:59', 'LUNCH'],
+    ['16:00', 'DINNER'],
+    ['19:59', 'DINNER'],
+    ['23:59', 'DINNER'],
   ])('%s belongs to %s', (slot, group) => {
     expect(slotGroupOf(slot)).toBe(group);
   });

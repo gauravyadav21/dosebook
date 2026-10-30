@@ -7,4 +7,4 @@ Acceptance criteria
 - Given extraction fails or returns nothing, then the user can enter the data manually.
 - Given the user edits and confirms, then only the confirmed values are saved.
 - Given the user leaves without confirming, then nothing is added to the timeline.
-- Given extracted medicines, the user confirms or edits the schedule: slots, before/after food, doses per day, course length. Missing schedule fields must be filled before Confirm is enabled.
+- Given extracted medicines, the user confirms or edits the schedule: times of day (morning 08:00, lunch 13:00, dinner 20:00, each changeable, see S14), before/after food, doses per day, course length. Missing schedule fields must be filled before Confirm is enabled.

@@ -4,6 +4,7 @@ import { matchDoctor } from '../doctors/doctor-match.js';
 import type { Doctor, Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { ConfirmDto, DoctorDto } from './prescriptions.dto.js';
+import { scheduleProblem } from './schedule.rules.js';
 import { prescriptionInclude, toDoctorView, toPrescriptionView } from './prescriptions.views.js';
 
 @Injectable()
@@ -17,9 +18,8 @@ export class PrescriptionsService {
     if (doc.status === 'CONFIRMED') throw new ConflictException('This prescription is already confirmed');
 
     for (const m of dto.medicines) {
-      if (m.schedule.dosesPerDay !== m.schedule.slots.length) {
-        throw new BadRequestException(`${m.name}: doses per day must match the number of times of day chosen`);
-      }
+      const problem = scheduleProblem(m.schedule.slots, m.schedule.times ?? [], m.schedule.dosesPerDay);
+      if (problem) throw new BadRequestException(`${m.name}: ${problem}`);
     }
 
     const prescription = await this.prisma.$transaction(async (tx) => {
@@ -42,7 +42,7 @@ export class PrescriptionsService {
               create: {
                 userId,
                 slots: m.schedule.slots,
-                times: [],
+                times: m.schedule.times ?? [],
                 food: m.schedule.food,
                 dosesPerDay: m.schedule.dosesPerDay,
                 courseDays: m.schedule.courseDays,

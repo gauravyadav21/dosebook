@@ -1,5 +1,5 @@
 import { addDays, diffDays } from '../common/dates.js';
-import { SLOTS } from '../common/slots.js';
+import { DEFAULT_SLOT_TIMES, type Slot } from '../common/slots.js';
 
 export interface ScheduleLike {
   slots: string[];
@@ -22,10 +22,14 @@ export function isDueOn(s: ScheduleLike, date: string): boolean {
   return end === null || date < end;
 }
 
-/** Dose times within one day: named slots in day order, then clock times. */
+/** The clock time a dose is due: a chosen time as it is, a named slot at its default time (S14). */
+export function clockTimeOf(slotOrTime: string): string {
+  return DEFAULT_SLOT_TIMES[slotOrTime as Slot] ?? slotOrTime;
+}
+
+/** Dose times within one day in clock order: named slots at their default time, chosen times as given. */
 export function dailySlots(s: ScheduleLike): string[] {
-  const named = SLOTS.filter((slot) => s.slots.includes(slot));
-  return [...named, ...[...s.times].sort()];
+  return [...s.slots, ...s.times].sort((a, b) => clockTimeOf(a).localeCompare(clockTimeOf(b)));
 }
 
 /** Planned doses over the whole course, shortened if the user stopped early. Null for open-ended reminders. */

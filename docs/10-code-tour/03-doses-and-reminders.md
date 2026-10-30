@@ -45,7 +45,8 @@ Dates are text like `2026-10-05`, not timestamps, so a day never shifts between 
 - `mobile/test/logic_test.dart`: "plans a reminder at each slot and one follow-up 30 minutes later", "plans nothing for a dose already marked taken or skipped", "stops when the course length is reached".
 
 ## Agent defaults to question
-- Slot times are fixed at 8:00, 13:00, 18:00 and 21:00; you cannot move them.
+- Slot times default to 8:00, 13:00 and 20:00; the user can change each one (S14). Changing a time applies at once to doses not yet marked today; a dose already marked today keeps its mark, moved to the new time (see the note under Decisions in S14).
+- Note reminders (S15) repeat on the phone on their own (daily, weekly, monthly); only the next 3 days of dose reminders are planned.
 - Only 3 days and 60 notifications are planned; if the app is not opened for longer, reminders stop until it is.
 - The follow-up fires without asking the server, so a dose marked on another device could still get one.
 - Notification timing has never been checked on a device.

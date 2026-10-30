@@ -28,7 +28,7 @@ describe('S2 confirm and S3 timeline (e2e)', () => {
     expect(res.body.condition).toBe('Throat infection');
     expect(res.body.medicines[0]).toMatchObject({ name: 'Paracetamol', dose: '650 mg, 1 tablet', source: 'PRESCRIPTION' });
     expect(res.body.medicines[0].schedule).toMatchObject({
-      slots: ['MORNING', 'NOON', 'NIGHT'],
+      slots: ['MORNING', 'LUNCH', 'DINNER'],
       food: 'AFTER_FOOD',
       dosesPerDay: 3,
       courseDays: 5,
@@ -114,7 +114,7 @@ describe('S2 confirm and S3 timeline (e2e)', () => {
       ['missing course length', medicine(noCourse)],
       ['no slots', medicine(schedule({ slots: [], dosesPerDay: 1 }))],
       ['invalid slot', medicine(schedule({ slots: ['MIDNIGHT'], dosesPerDay: 1 }))],
-      ['duplicate slot', medicine(schedule({ slots: ['NIGHT', 'NIGHT'], dosesPerDay: 2 }))],
+      ['duplicate slot', medicine(schedule({ slots: ['DINNER', 'DINNER'], dosesPerDay: 2 }))],
       ['zero doses per day', medicine(schedule({ dosesPerDay: 0 }))],
       ['negative doses per day', medicine(schedule({ dosesPerDay: -1 }))],
       ['doses per day not matching slots', medicine(schedule({ dosesPerDay: 2 }))],

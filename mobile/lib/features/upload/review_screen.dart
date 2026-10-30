@@ -152,6 +152,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(failed ? 'Enter details' : 'Check what we read')),
       body: ListView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.all(16),
         children: [
           InfoBanner(failed ? couldNotRead : checkAgainstPaper),
