@@ -98,4 +98,24 @@ describe('GeminiExtractor (mocked HTTP, no live call)', () => {
     const fetchFn = vi.fn(async () => new Response('{"error":"quota exceeded for key test-key"}', { status: 429 }));
     await expect(new GeminiExtractor('test-key', 'm', fetchFn).extract(input)).rejects.toThrow('Gemini request failed with status 429');
   });
+
+  it('moves on to the next model when the first one does not answer in time', async () => {
+    const answered = reply('{"medicines":[{"name":"Paracetamol"}]}');
+    const fetchFn = vi
+      .fn()
+      .mockRejectedValueOnce(new DOMException('The operation was aborted due to timeout', 'TimeoutError'))
+      .mockImplementationOnce(answered);
+    const result = await new GeminiExtractor('k', ['slow-model', 'next-model'], fetchFn).extract(input);
+    expect(result?.medicines[0].name).toBe('Paracetamol');
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+    expect(String(fetchFn.mock.calls[1][0])).toContain('next-model');
+  });
+
+  it('fails without a response body when no model answers in time', async () => {
+    const fetchFn = vi.fn().mockRejectedValue(new DOMException('The operation was aborted due to timeout', 'TimeoutError'));
+    await expect(new GeminiExtractor('k', ['a', 'b'], fetchFn).extract(input)).rejects.toThrow(
+      'Gemini request failed with no answer in time',
+    );
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+  });
 });

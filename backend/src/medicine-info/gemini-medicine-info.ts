@@ -1,7 +1,7 @@
 import { type FetchLike, geminiJson } from '../common/gemini.js';
 import { cleanSummary, type LookupResult, type MedicineInfoProvider } from './medicine-info.js';
 
-const TIMEOUT_MS = 20_000;
+const TIMEOUT_MS = 10_000;
 
 const PROMPT = `You are given one name. Decide whether it is the name of a medicine (generic or brand).
 Return only JSON: {"isMedicine": boolean, "name": string, "usedFor": string, "storage": string}

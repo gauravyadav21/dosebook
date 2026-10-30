@@ -2,7 +2,7 @@ import { type FetchLike, geminiJson } from '../common/gemini.js';
 import type { ExtractionInput, ExtractionResult, Extractor } from './extraction.types.js';
 import { normalizeExtraction } from './normalize.js';
 
-const TIMEOUT_MS = 30_000;
+const TIMEOUT_MS = 10_000;
 
 const PROMPT = `You read one medical prescription and copy out what is written. Do not add, infer or correct anything.
 Return only JSON with this shape:
