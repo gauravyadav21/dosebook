@@ -166,6 +166,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     )
                   : ListView(
+                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                       controller: _scroll,
                       children: [
                         for (final turn in _turns)

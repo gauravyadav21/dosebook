@@ -63,6 +63,7 @@ class _SignInScreenState extends State<SignInScreen> {
       appBar: AppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
           child: Form(
             key: _form,

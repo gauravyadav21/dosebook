@@ -125,7 +125,7 @@ class _MedicinesTab extends StatelessWidget {
               meta: m.schedule == null
                   ? null
                   : dotted([
-                      m.schedule!.slots.map(slotLabel).join(', '),
+                      [...m.schedule!.slots, ...m.schedule!.times].map(slotLabel).join(', '),
                       foodLabel(m.schedule!.food),
                       m.schedule!.stopped ? 'reminders stopped' : '${m.schedule!.courseDays} days',
                     ]),

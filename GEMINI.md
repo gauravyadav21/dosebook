@@ -29,4 +29,4 @@ Before asking the participant anything, read `docs/08-build-log/` (build log, qu
 - Before committing, state what was tested and by whom. If it could not be tested, ask first.
 
 ## Standards
-See `docs/03-standards/coding-standards.md`. Keep changes small; commit after every working step.
+See `docs/03-standards/coding-standards.md`. UI and UX: read `docs/03-standards/ui-ux-rules.md` before any screen work (60-30-10 colour, WCAG contrast, 8-point grid, shared components, checklist). Keep changes small; commit after every working step.

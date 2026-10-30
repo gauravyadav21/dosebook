@@ -8,6 +8,7 @@ import 'features/intro/intro_screen.dart';
 import 'features/onboarding/first_run_screen.dart';
 import 'features/splash/splash_screen.dart';
 import 'reminders/reminders.dart';
+import 'widgets/dismiss_keyboard.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +34,7 @@ class App extends StatelessWidget {
           theme: appTheme(Brightness.light),
           darkTheme: appTheme(Brightness.dark),
           themeMode: session.themeMode,
+          builder: dismissKeyboardBuilder,
           home: const _Root(),
         ),
       ),

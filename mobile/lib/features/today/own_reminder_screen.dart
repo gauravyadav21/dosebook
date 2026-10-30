@@ -5,6 +5,7 @@ import '../../app/app_scope.dart';
 import '../../app/format.dart';
 import '../../app/wording.dart';
 import '../../widgets/common.dart';
+import '../../widgets/pick_time.dart';
 
 /// Add or edit the user's own reminder for a medicine they take themselves (S7).
 /// It is always labelled as the user's own, never as prescribed. Pops `true` when something changed.
@@ -34,9 +35,8 @@ class _OwnReminderScreenState extends State<OwnReminderScreen> {
   bool get _valid => _name.text.trim().isNotEmpty && (_slots.isNotEmpty || _times.isNotEmpty);
 
   Future<void> _addTime() async {
-    final picked = await showTimePicker(context: context, initialTime: const TimeOfDay(hour: 8, minute: 0));
-    if (picked == null) return;
-    final value = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+    final value = await pickClockTime(context, defaultSlotTimes['MORNING']!);
+    if (value == null || !mounted) return;
     if (!_times.contains(value)) setState(() => _times..add(value)..sort());
   }
 
@@ -88,6 +88,7 @@ class _OwnReminderScreenState extends State<OwnReminderScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(editing ? 'Edit my reminder' : 'Add my reminder')),
       body: ListView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.all(16),
         children: [
           const Align(alignment: Alignment.centerLeft, child: SourceTag(selfAdded: true)),

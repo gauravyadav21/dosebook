@@ -23,3 +23,4 @@
 - Every screen that shows server data loads through `Loader` (`lib/widgets/common.dart`). That gives it pull-to-refresh, a reload when data changes anywhere in the app, and a reload when the app returns to the foreground. No fetching in `initState` and no manual reload after navigation. See the `add-screen` skill.
 - Phone features (file picker, dialler, share sheet, notifications) sit behind a replaceable function or interface so widget tests can run without them.
 - Colours and text styles come from the theme (`ColorScheme.fromSeed`), never hard-coded hex values.
+- UI and UX rules live in `docs/03-standards/ui-ux-rules.md` (60-30-10 colour, WCAG AA/AAA contrast, 8-point grid, one shared component each, screen checklist). Spacing and radii come from `lib/app/tokens.dart`; `test/contrast_test.dart` and `test/grid_test.dart` enforce them.

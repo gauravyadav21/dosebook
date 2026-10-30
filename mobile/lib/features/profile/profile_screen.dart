@@ -161,6 +161,7 @@ class _ProfileFormState extends State<_ProfileForm> {
     const decimal = TextInputType.numberWithOptions(decimal: true);
 
     return ListView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.all(16),
       children: [
         Text(widget.profile.email, style: muted),

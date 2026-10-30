@@ -242,6 +242,7 @@ class _DoctorEditScreenState extends State<DoctorEditScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Edit doctor')),
       body: ListView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.all(16),
         children: [
           const InfoBanner('These details come from your prescription. Check them against the paper copy.'),
