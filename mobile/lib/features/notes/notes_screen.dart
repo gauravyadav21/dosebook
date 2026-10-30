@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import '../../api/models.dart';
 import '../../app/app_scope.dart';
 import '../../app/format.dart';
+import '../../app/tokens.dart';
 import '../../widgets/common.dart';
 import '../auth/require_sign_in.dart';
 import '../home/home_shell.dart';
+import 'reminder_sheet.dart';
 
-/// Open notes: free text the user writes for themselves (S7). The app stores it and does nothing else with it.
+/// Open notes: free text the user writes for themselves (S7). The app stores it and does nothing else with it,
+/// except the reminder the user may ask for on a note (S15).
 class NotesScreen extends StatelessWidget {
   const NotesScreen({super.key});
 
@@ -63,6 +66,21 @@ class NotesScreen extends StatelessWidget {
                       children: [
                         Text(note.text, maxLines: 4, overflow: TextOverflow.ellipsis, style: text.bodyLarge),
                         const SizedBox(height: 8),
+                        if (note.reminder != null) ...[
+                          Row(
+                            children: [
+                              Icon(Icons.notifications_active_outlined, size: Space.lg, color: scheme.tertiary),
+                              Gap.sm,
+                              Expanded(
+                                child: Text(
+                                  noteReminderWords(note.reminder!),
+                                  style: text.labelLarge?.copyWith(color: scheme.onSurfaceVariant),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Gap.xs,
+                        ],
                         Text(
                           'Edited ${prettyDate(isoDate(note.updatedAt))}',
                           style: text.labelMedium?.copyWith(color: scheme.onSurfaceVariant),
@@ -80,7 +98,7 @@ class NotesScreen extends StatelessWidget {
   }
 }
 
-/// One text field. Nothing else.
+/// One text field, and an optional reminder (S15).
 class NoteEditScreen extends StatefulWidget {
   const NoteEditScreen({super.key, this.note});
 
@@ -94,6 +112,9 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
   late final _text = TextEditingController(text: widget.note?.text ?? '');
   bool _busy = false;
 
+  // The reminder, chosen in the sheet. Off (null) until the user switches it on.
+  late NoteReminder? _reminder = widget.note?.reminder;
+
   static const maxLength = 5000;
 
   @override
@@ -103,20 +124,35 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
   }
 
   Future<void> _save() async {
-    final api = AppScope.api(context);
+    final session = AppScope.of(context);
+    final api = session.api;
     final navigator = Navigator.of(context);
+    final reminder = _reminder;
     setState(() => _busy = true);
     final ok = await guarded(
       context,
-      () => widget.note == null ? api.createNote(_text.text) : api.updateNote(widget.note!.id, _text.text),
+      () => widget.note == null
+          ? api.createNote(_text.text, reminder: reminder)
+          : api.updateNote(widget.note!.id, _text.text, reminder: reminder),
     );
     if (!mounted) return;
     setState(() => _busy = false);
-    if (ok) navigator.pop();
+    if (ok) {
+      // Move the phone's notifications to match what was just saved.
+      session.reminders.sync(api);
+      navigator.pop();
+    }
+  }
+
+  /// Opens the reminder sheet. Closing it without choosing changes nothing.
+  Future<void> _editReminder() async {
+    final choice = await showReminderSheet(context, current: _reminder);
+    if (choice != null && mounted) setState(() => _reminder = choice.reminder);
   }
 
   Future<void> _delete() async {
-    final api = AppScope.api(context);
+    final session = AppScope.of(context);
+    final api = session.api;
     final navigator = Navigator.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
@@ -130,7 +166,10 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
     );
     if (confirmed != true || !mounted) return;
     final ok = await guarded(context, () => api.deleteNote(widget.note!.id));
-    if (ok) navigator.pop();
+    if (ok) {
+      session.reminders.sync(api);
+      navigator.pop();
+    }
   }
 
   @override
@@ -148,18 +187,75 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: TextField(
-          controller: _text,
-          autofocus: !editing,
-          maxLength: maxLength,
-          maxLines: null,
-          expands: true,
-          textAlignVertical: TextAlignVertical.top,
-          keyboardType: TextInputType.multiline,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(hintText: 'Write your note', border: InputBorder.none),
-          onChanged: (_) => setState(() {}),
+        padding: Space.page,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _text,
+                autofocus: !editing,
+                maxLength: maxLength,
+                maxLines: null,
+                expands: true,
+                textAlignVertical: TextAlignVertical.top,
+                keyboardType: TextInputType.multiline,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                  hintText: 'Write your note',
+                  filled: false,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                ),
+                onChanged: (_) => setState(() {}),
+              ),
+            ),
+            Gap.sm,
+            _ReminderRow(reminder: _reminder, onOpen: _editReminder, onOff: () => setState(() => _reminder = null)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "Remind me": off by default. Switching it on, or tapping the row, opens the sheet with every choice (S15).
+class _ReminderRow extends StatelessWidget {
+  const _ReminderRow({required this.reminder, required this.onOpen, required this.onOff});
+
+  final NoteReminder? reminder;
+  final VoidCallback onOpen;
+  final VoidCallback onOff;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final scheme = Theme.of(context).colorScheme;
+    return Card(
+      child: InkWell(
+        onTap: onOpen,
+        child: Padding(
+          padding: Space.card,
+          child: Row(
+            children: [
+              Icon(Icons.notifications_active_outlined, color: scheme.tertiary),
+              Gap.md,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Remind me', style: text.titleMedium),
+                    Text(
+                      reminder == null ? 'Off' : noteReminderWords(reminder!),
+                      style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(value: reminder != null, onChanged: (on) => on ? onOpen() : onOff()),
+            ],
+          ),
         ),
       ),
     );

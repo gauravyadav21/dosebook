@@ -306,7 +306,7 @@ describe('S5 chat: medicine lookup with a model, saved for reuse (e2e)', () => {
         {
           name: unique('Ownmed'),
           dose: '1 tablet',
-          schedule: { slots: ['NIGHT'], food: 'AFTER_FOOD', dosesPerDay: 1, courseDays: 3, startDate: '2026-10-01' },
+          schedule: { slots: ['DINNER'], food: 'AFTER_FOOD', dosesPerDay: 1, courseDays: 3, startDate: '2026-10-01' },
         },
       ],
     });

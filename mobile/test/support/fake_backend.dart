@@ -8,6 +8,8 @@ import 'package:dosebook/app/app_scope.dart';
 import 'package:dosebook/reminders/reminders.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:dosebook/app/theme.dart';
+import 'package:dosebook/widgets/dismiss_keyboard.dart';
 
 typedef Handler = Object? Function(http.Request request);
 
@@ -88,7 +90,8 @@ class TestApp {
   Widget wrap(Widget child) => AppScope(
         session: session,
         child: MaterialApp(
-          theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
+          theme: appTheme(Brightness.light),
+          builder: dismissKeyboardBuilder,
           home: child,
         ),
       );
@@ -137,7 +140,7 @@ Map<String, dynamic> medicineJson({
     };
 
 Map<String, dynamic> scheduleJson({String endDate = '2999-01-01', bool stopped = false}) => {
-      'slots': ['MORNING', 'NOON', 'NIGHT'],
+      'slots': ['MORNING', 'LUNCH', 'DINNER'],
       'times': <String>[],
       'food': 'AFTER_FOOD',
       'dosesPerDay': 3,

@@ -399,18 +399,56 @@ class ChatAnswer {
       );
 }
 
-/// A free-text note (S7).
+/// An optional reminder on a note (S15): once on a date, daily, weekly on a weekday, or monthly on a day (1 to 28), at a time.
+class NoteReminder {
+  const NoteReminder({required this.frequency, required this.time, this.weekday, this.dayOfMonth, this.date});
+
+  /// ONCE, DAILY, WEEKLY or MONTHLY.
+  final String frequency;
+
+  /// "HH:mm".
+  final String time;
+
+  /// 1 (Monday) to 7 (Sunday); weekly only.
+  final int? weekday;
+
+  /// 1 to 28; monthly only.
+  final int? dayOfMonth;
+
+  /// "YYYY-MM-DD"; one-time only.
+  final String? date;
+
+  factory NoteReminder.fromJson(Json j) => NoteReminder(
+        frequency: j['frequency'] as String,
+        time: j['time'] as String,
+        weekday: j['weekday'] as int?,
+        dayOfMonth: j['dayOfMonth'] as int?,
+        date: j['date'] as String?,
+      );
+
+  Json toJson() => {
+        'frequency': frequency,
+        'time': time,
+        if (frequency == 'WEEKLY') 'weekday': weekday,
+        if (frequency == 'MONTHLY') 'dayOfMonth': dayOfMonth,
+        if (frequency == 'ONCE') 'date': date,
+      };
+}
+
+/// A free-text note (S7), with an optional reminder (S15).
 class Note {
-  Note({required this.id, required this.text, required this.updatedAt});
+  Note({required this.id, required this.text, required this.updatedAt, this.reminder});
 
   final String id;
   final String text;
   final DateTime updatedAt;
+  final NoteReminder? reminder;
 
   factory Note.fromJson(Json j) => Note(
         id: j['id'] as String,
         text: j['text'] as String,
         updatedAt: DateTime.parse(j['updatedAt'] as String).toLocal(),
+        reminder: j['reminder'] == null ? null : NoteReminder.fromJson(j['reminder'] as Json),
       );
 }
 

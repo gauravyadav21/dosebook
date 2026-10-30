@@ -208,9 +208,12 @@ class Api {
   Future<List<Note>> notes() async =>
       (await _send('GET', '/notes') as List).map((n) => Note.fromJson(n as Json)).toList();
 
-  Future<void> createNote(String text) => _send('POST', '/notes', body: {'text': text});
+  /// [reminder] null means no reminder (S15). On a change it is always sent, so null removes an existing one.
+  Future<void> createNote(String text, {NoteReminder? reminder}) =>
+      _send('POST', '/notes', body: {'text': text, 'reminder': reminder?.toJson()});
 
-  Future<void> updateNote(String id, String text) => _send('PATCH', '/notes/$id', body: {'text': text});
+  Future<void> updateNote(String id, String text, {NoteReminder? reminder}) =>
+      _send('PATCH', '/notes/$id', body: {'text': text, 'reminder': reminder?.toJson()});
 
   Future<void> deleteNote(String id) => _send('DELETE', '/notes/$id');
 

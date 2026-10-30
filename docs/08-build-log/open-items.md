@@ -37,7 +37,6 @@ From `docs/09-playbook/standing-out.md`. None of these is done yet.
 - Password reset, refresh tokens; token in secure storage.
 - Email verification at sign-up (future scope by decision, 5 Oct 2026).
 - Figma frames for the splash, visitor tab and Create account, and the logo sheet: script ready in `docs/02-architecture/assets/figma-s11-frames.js`, refused by the plan's call limit. iOS icon and launch screen not made.
-- Custom reminder times for the named slots (fixed at 8:00, 13:00, 18:00, 21:00).
 - PDF preview of the original document.
 - Measurements log (future scope by decision).
 - Wider AI help in chat (future scope by decision).

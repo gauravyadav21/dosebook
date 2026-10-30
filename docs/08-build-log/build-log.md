@@ -125,3 +125,15 @@ Read from the raw files on 4 Oct; the second session is still open, so its numbe
 | Tokens read from cache | about 5.8 million | about 97 million |
 
 The record shows a cost of about 2.36 USD for session 1 at the point it was written. No cost figure is recorded for session 2.
+
+### Dose times, note reminders, keyboard, theme foundations (8 Oct)
+Asked for by the participant: a time per dose with defaults, reminders on notes, the keyboard closing everywhere, and a new look (60-30-10 colour, WCAG contrast, 8-point grid, a reusable UI rule file).
+- **Deployment, paused.** Backend was live on Render for a short while (`/health` ok, `/prescriptions` 401 without a token), then the participant suspended it. Dockerfile built on Render's first try. The deployment doc edits are waiting.
+- **UI foundations (uncommitted until now):** teal seed, component themes, `DoseColors`, strict 8-point tokens, `contrast_test` (46 text/background pairs, light and dark; five failed AAA at first and were lifted in the theme), `grid_test` with a baseline that can only go down, and `docs/03-standards/ui-ux-rules.md` wired into the context files and both skills.
+- **Keyboard:** first fix reacted to taps, so chips and buttons kept the focus. Now it reacts to the touch going down. Course length has a Done key and one-tap lengths (3, 5, 7, 10, 14 days).
+- **S14 dose times:** slots are now Morning 08:00, Lunch 13:00, Dinner 20:00; each can be changed. Migration `slots_lunch_dinner` tried on a copy of the dev database first. A mark made today survives a time change (a deviation from the spec's "from tomorrow", noted in S14).
+- **S15 note reminders:** optional daily, weekly or monthly reminder on a note, phone notification only, repeating on its own. Migration `note_reminder`.
+- **Mistake and fix:** one `dart format` run rewrote about 30 files that the project does not format; reverted from git and only the intended edits were reapplied.
+- **Result:** backend 265 unit + 248 e2e; app 213 tests, analyze clean. On the Pixel emulator: Today grouped Morning/Lunch/Dinner, schedule editor with time chips, dose alarms at 08:00, 13:00, 20:00 plus 30-minute follow-ups, and the weekly note reminder scheduled for Monday 09:00.
+- **Not done:** a notification actually firing; picking a custom time in the system time picker on the device; the screens other than Notes and the schedule editor are still on the old spacing (the grid baseline lists them); deployment; the participant's human review of S14 and S15.
+- **Later the same day:** doses per day became a number the user types (1 to 12, with "Add a time" for extra doses); selecting a time of day opens the time picker; the note reminder moved into a bottom sheet and gained a "Once" option with a date (migration `note_reminder_once`). Backend 275 unit + 254 e2e; app 221 tests.

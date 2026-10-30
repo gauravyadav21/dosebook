@@ -42,7 +42,7 @@ export async function upload(app: INestApplication, user: TestUser, fileName = '
 }
 
 export function schedule(overrides: Record<string, unknown> = {}) {
-  return { slots: ['MORNING', 'NOON', 'NIGHT'], food: 'AFTER_FOOD', dosesPerDay: 3, courseDays: 5, startDate: '2026-10-01', ...overrides };
+  return { slots: ['MORNING', 'LUNCH', 'DINNER'], food: 'AFTER_FOOD', dosesPerDay: 3, courseDays: 5, startDate: '2026-10-01', ...overrides };
 }
 
 /** Body for POST /documents/:id/confirm, matching the fake "sore throat" sample. */
@@ -64,7 +64,7 @@ export function confirmBody(overrides: Record<string, unknown> = {}) {
         dose: '10 mg, 1 tablet',
         frequency: 'at night',
         duration: '5 days',
-        schedule: schedule({ slots: ['NIGHT'], dosesPerDay: 1 }),
+        schedule: schedule({ slots: ['DINNER'], dosesPerDay: 1 }),
       },
     ],
     ...overrides,

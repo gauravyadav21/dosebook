@@ -11,7 +11,9 @@ import 'package:dosebook/features/auth/sign_up_screen.dart';
 import 'package:dosebook/features/chat/chat_screen.dart';
 import 'package:dosebook/features/doctors/doctors_screen.dart';
 import 'package:dosebook/features/intro/intro_screen.dart';
+import 'package:dosebook/app/format.dart';
 import 'package:dosebook/features/notes/notes_screen.dart';
+import 'package:dosebook/features/notes/reminder_sheet.dart';
 import 'package:dosebook/features/profile/profile_screen.dart';
 import 'package:dosebook/features/safety/feedback_screen.dart';
 import 'package:dosebook/features/today/own_reminder_screen.dart';
@@ -565,16 +567,16 @@ void main() {
               'date': '2026-10-04',
               'doses': [
                 doseJson(status: 'TAKEN'),
-                doseJson(slot: 'NOON'),
-                doseJson(medicineId: 'm9', name: 'Vitamin D3', slot: '13:30', group: 'NOON', origin: 'YOUR_REMINDER', food: null),
+                doseJson(slot: 'LUNCH'),
+                doseJson(medicineId: 'm9', name: 'Vitamin D3', slot: '13:30', group: 'LUNCH', origin: 'YOUR_REMINDER', food: null),
               ],
             });
       await pumpScreen(tester, backend, TodayScreen(now: now));
 
       expect(find.text('Sunday 4 October · 1 of 3 doses marked'), findsOneWidget);
       expect(find.text('Morning'), findsOneWidget);
-      expect(find.text('Noon'), findsOneWidget);
-      expect(find.text('Night'), findsNothing);
+      expect(find.text('Lunch'), findsOneWidget);
+      expect(find.text('Dinner'), findsNothing);
       expect(find.text('As prescribed'), findsNWidgets(2));
       expect(find.text('Your reminder · Self-added'), findsOneWidget);
       expect(find.textContaining('Taken at'), findsOneWidget);
@@ -752,9 +754,18 @@ void main() {
           medicines: [MedicineDraft(name: 'Paracetamol', dose: '500 mg', frequency: '3 times a day')],
         );
 
+    /// Selecting a time of day opens the time picker straight away; Cancel keeps the default time.
+    Future<void> chooseSlot(WidgetTester tester, String label) async {
+      await tester.tap(find.text(label));
+      await tester.pumpAndSettle();
+      expect(find.text('Select time'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+    }
+
     Future<void> fillSchedule(WidgetTester tester) async {
-      await tester.tap(find.widgetWithText(FilterChip, 'Morning'));
-      await tester.tap(find.widgetWithText(FilterChip, 'Night'));
+      await chooseSlot(tester, 'Morning 8:00 am');
+      await chooseSlot(tester, 'Dinner 8:00 pm');
       await tester.tap(find.widgetWithText(FilterChip, 'After food'));
       await tester.enterText(find.widgetWithText(TextField, 'Course length'), '5');
       await tester.pump();
@@ -781,11 +792,75 @@ void main() {
       expect(medicine['name'], 'Paracetamol');
       expect(medicine.containsKey('duration'), isFalse);
       final schedule = medicine['schedule'] as Map<String, dynamic>;
-      expect(schedule['slots'], ['MORNING', 'NIGHT']);
+      expect(schedule['slots'], ['MORNING', 'DINNER']);
+      expect(schedule['times'], isEmpty);
       expect(schedule['food'], 'AFTER_FOOD');
       expect(schedule['dosesPerDay'], 2);
       expect(schedule['courseDays'], 5);
       expect(app.reminders.syncs, 1);
+    });
+
+    testWidgets('shows one chip per time of day with its default time; selecting one opens the time picker (S14)', (tester) async {
+      await pumpScreen(tester, FakeBackend(), ScheduleScreen(reviewed: reviewed()));
+      expect(find.text('Morning 8:00 am'), findsOneWidget);
+      expect(find.text('Lunch 1:00 pm'), findsOneWidget);
+      expect(find.text('Dinner 8:00 pm'), findsOneWidget);
+      expect(find.byIcon(Icons.edit_outlined), findsNothing);
+
+      await chooseSlot(tester, 'Morning 8:00 am');
+      await chooseSlot(tester, 'Dinner 8:00 pm');
+      expect(find.byIcon(Icons.edit_outlined), findsNWidgets(2));
+      expect(find.text('Morning 8:00 am'), findsOneWidget, reason: 'cancel keeps the default time');
+
+      // The pencil opens the picker again; deselecting does not.
+      await tester.tap(find.byTooltip('Change the morning time'));
+      await tester.pumpAndSettle();
+      expect(find.text('Select time'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Dinner 8:00 pm'));
+      await tester.pumpAndSettle();
+      expect(find.text('Select time'), findsNothing);
+      expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, '7 days'), findsNothing);
+    });
+
+    testWidgets('doses per day is a number the user can type; Confirm waits until the times match it (S14)', (tester) async {
+      await pumpScreen(tester, FakeBackend(), ScheduleScreen(reviewed: reviewed()));
+      final doses = find.widgetWithText(TextField, 'Doses per day');
+      expect(tester.widget<TextField>(doses).controller!.text, '');
+
+      await chooseSlot(tester, 'Morning 8:00 am');
+      await chooseSlot(tester, 'Lunch 1:00 pm');
+      expect(tester.widget<TextField>(doses).controller!.text, '2', reason: 'follows the times until the user types');
+
+      await tester.enterText(doses, '5');
+      await tester.tap(find.widgetWithText(FilterChip, 'After food'));
+      await tester.enterText(find.widgetWithText(TextField, 'Course length'), '5');
+      await tester.pump();
+      expect(find.textContaining('add 3 more times'), findsOneWidget);
+      expect(filled(tester, 'Confirm and set reminders').onPressed, isNull);
+
+      await tester.enterText(doses, '1');
+      await tester.pump();
+      expect(find.textContaining('remove 1 time'), findsOneWidget);
+
+      await tester.enterText(doses, '2');
+      await tester.pump();
+      expect(filled(tester, 'Confirm and set reminders').onPressed, isNotNull);
+      expect(find.text('Add a time'), findsOneWidget);
+    });
+
+    testWidgets('tapping a chip closes the keyboard on the schedule screen', (tester) async {
+      await pumpScreen(tester, FakeBackend(), ScheduleScreen(reviewed: reviewed()));
+      await tester.tap(find.widgetWithText(TextField, 'Course length'));
+      await tester.pump();
+      expect(FocusManager.instance.primaryFocus?.context?.findAncestorWidgetOfExactType<TextField>(), isNotNull);
+
+      await tester.tap(find.widgetWithText(FilterChip, 'Before food'));
+      await tester.pump();
+      expect(FocusManager.instance.primaryFocus?.context?.findAncestorWidgetOfExactType<TextField>(), isNull);
     });
 
     testWidgets('asks "Same doctor?" when only the name matches and links the chosen card', (tester) async {
@@ -1013,8 +1088,13 @@ void main() {
   });
 
   group('Open notes (S7)', () {
-    Map<String, dynamic> note(String id, String text) =>
-        {'id': id, 'text': text, 'createdAt': '2026-10-04T05:00:00.000Z', 'updatedAt': '2026-10-04T05:00:00.000Z'};
+    Map<String, dynamic> note(String id, String text, [Map<String, dynamic>? reminder]) => {
+          'id': id,
+          'text': text,
+          'reminder': reminder,
+          'createdAt': '2026-10-04T05:00:00.000Z',
+          'updatedAt': '2026-10-04T05:00:00.000Z',
+        };
 
     testWidgets('lists notes as plain text, with no medicine fields or tags', (tester) async {
       final backend = FakeBackend()..on('GET /notes', (_) => [note('n1', 'Ask about the cough next visit.')]);
@@ -1025,18 +1105,159 @@ void main() {
       expect(find.byType(MedicineCard), findsNothing);
     });
 
-    testWidgets('the editor is a single text field; Save is disabled while it is empty', (tester) async {
+    testWidgets('the editor has one text field and the reminder off; Save is disabled while it is empty', (tester) async {
       final backend = FakeBackend()..on('POST /notes', (_) => Reply(201, note('n1', 'x')));
       await pumpScreen(tester, backend, const NoteEditScreen());
       expect(find.byType(TextField), findsOneWidget);
       expect(find.byType(FilterChip), findsNothing);
+      expect(find.text('Remind me'), findsOneWidget);
+      expect(find.text('Off'), findsOneWidget);
+      expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
+      expect(find.byType(SegmentedButton<String>), findsNothing, reason: 'the choices live in the sheet');
       expect(tester.widget<TextButton>(find.widgetWithText(TextButton, 'Save')).onPressed, isNull);
 
       await tester.enterText(find.byType(TextField), 'Line one\nLine two');
       await tester.pump();
       await tester.tap(find.widgetWithText(TextButton, 'Save'));
       await tester.pumpAndSettle();
-      expect(backend.bodies('POST /notes').single, {'text': 'Line one\nLine two'});
+      expect(backend.bodies('POST /notes').single, {'text': 'Line one\nLine two', 'reminder': null});
+    });
+
+    testWidgets('switching Remind me on opens a bottom sheet; closing it leaves the reminder off (S15)', (tester) async {
+      await pumpScreen(tester, FakeBackend(), const NoteEditScreen());
+      await tester.tap(find.byType(Switch));
+      await tester.pumpAndSettle();
+      expect(find.byType(ReminderSheet), findsOneWidget);
+      expect(find.text('Set reminder'), findsOneWidget);
+      expect(find.text('Remove reminder'), findsNothing, reason: 'nothing to remove yet');
+      for (final label in ['Once', 'Daily', 'Weekly', 'Monthly']) {
+        expect(find.text(label), findsOneWidget);
+      }
+      expect(find.text('Daily at 9:00 am'), findsOneWidget, reason: 'daily at 9:00 unless the user changes it');
+
+      await tester.tapAt(const Offset(200, 20));
+      await tester.pumpAndSettle();
+      expect(find.byType(ReminderSheet), findsNothing);
+      expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
+      expect(find.text('Off'), findsOneWidget);
+    });
+
+    testWidgets('sets a weekly reminder in the sheet: weekday and time are sent, and the phone is re-synced (S15)', (tester) async {
+      final backend = FakeBackend()..on('POST /notes', (_) => Reply(201, note('n1', 'x')));
+      final app = await pumpScreen(tester, backend, const NoteEditScreen());
+      await tester.enterText(find.byType(TextField), 'Weigh myself');
+      await tester.tap(find.byType(Switch));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Weekly'));
+      await tester.pump();
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Wed'));
+      await tester.pump();
+      expect(find.text('Weekly on Wednesday at 9:00 am'), findsOneWidget);
+      await tester.tap(find.text('Set reminder'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ReminderSheet), findsNothing);
+      expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
+      expect(find.text('Weekly on Wednesday at 9:00 am'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(TextButton, 'Save'));
+      await tester.pumpAndSettle();
+      expect(backend.bodies('POST /notes').single, {
+        'text': 'Weigh myself',
+        'reminder': {'frequency': 'WEEKLY', 'time': '09:00', 'weekday': 3},
+      });
+      expect(app.reminders.syncs, 1);
+    });
+
+    testWidgets('a one-time reminder asks for a date, which starts tomorrow, and sends it (S15)', (tester) async {
+      final backend = FakeBackend()..on('POST /notes', (_) => Reply(201, note('n1', 'x')));
+      await pumpScreen(tester, backend, const NoteEditScreen());
+      await tester.enterText(find.byType(TextField), 'Call the lab');
+      await tester.tap(find.byType(Switch));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Once'));
+      await tester.pump();
+      final tomorrow = isoDate(DateTime.now().add(const Duration(days: 1)));
+      expect(find.byTooltip('Choose the date'), findsOneWidget);
+      expect(find.text(prettyDate(tomorrow)), findsOneWidget);
+      expect(find.text('Once on ${prettyDate(tomorrow)} at 9:00 am'), findsOneWidget);
+      await tester.tap(find.text('Set reminder'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(TextButton, 'Save'));
+      await tester.pumpAndSettle();
+      expect(backend.bodies('POST /notes').single, {
+        'text': 'Call the lab',
+        'reminder': {'frequency': 'ONCE', 'time': '09:00', 'date': tomorrow},
+      });
+    });
+
+    testWidgets('a one-time reminder in the past cannot be set (S15)', (tester) async {
+      final past = isoDate(DateTime.now().subtract(const Duration(days: 2)));
+      final existing = Note.fromJson(note('n1', 'Call the lab', {'frequency': 'ONCE', 'time': '09:00', 'date': past}));
+      await pumpScreen(tester, FakeBackend(), NoteEditScreen(note: existing));
+      await tester.tap(find.text('Once on ${prettyDate(past)} at 9:00 am'));
+      await tester.pumpAndSettle();
+      expect(find.text('Choose a date and time that has not passed yet.'), findsOneWidget);
+      expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Set reminder')).onPressed, isNull);
+
+      await tester.tap(find.text('Daily'));
+      await tester.pump();
+      expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Set reminder')).onPressed, isNotNull);
+    });
+
+    testWidgets('an existing reminder is shown on the row, and switching it off removes it (S15)', (tester) async {
+      final backend = FakeBackend()..on('PATCH /notes/n1', (_) => note('n1', 'x'));
+      final existing = Note.fromJson(note('n1', 'Refill', {'frequency': 'MONTHLY', 'time': '18:00', 'dayOfMonth': 5}));
+      final app = await pumpScreen(tester, backend, NoteEditScreen(note: existing));
+      expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
+      expect(find.text('Monthly on day 5 at 6:00 pm'), findsOneWidget);
+
+      await tester.tap(find.byType(Switch));
+      await tester.pump();
+      expect(find.text('Off'), findsOneWidget);
+      await tester.tap(find.widgetWithText(TextButton, 'Save'));
+      await tester.pumpAndSettle();
+      expect(backend.bodies('PATCH /notes/n1').single, {'text': 'Refill', 'reminder': null});
+      expect(app.reminders.syncs, 1);
+    });
+
+    testWidgets('the sheet can remove a reminder, and tapping the row reopens it with its values (S15)', (tester) async {
+      final existing = Note.fromJson(note('n1', 'Refill', {'frequency': 'WEEKLY', 'time': '07:30', 'weekday': 1}));
+      await pumpScreen(tester, FakeBackend(), NoteEditScreen(note: existing));
+      await tester.tap(find.text('Weekly on Monday at 7:30 am'));
+      await tester.pumpAndSettle();
+      expect(find.text('Weekly on Monday at 7:30 am'), findsNWidgets(2), reason: 'the row and the sheet');
+      expect(tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'Mon')).selected, isTrue);
+
+      await tester.tap(find.text('Remove reminder'));
+      await tester.pumpAndSettle();
+      expect(find.text('Off'), findsOneWidget);
+      expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
+    });
+
+    testWidgets('the list shows the reminder in words under a note that has one (S15)', (tester) async {
+      final backend = FakeBackend()
+        ..on('GET /notes', (_) => [
+              note('n1', 'Refill', {'frequency': 'WEEKLY', 'time': '07:30', 'weekday': 1}),
+              note('n2', 'No reminder here'),
+            ]);
+      await pumpScreen(tester, backend, const NotesScreen());
+      expect(find.text('Weekly on Monday at 7:30 am'), findsOneWidget);
+      expect(find.byIcon(Icons.notifications_active_outlined), findsOneWidget);
+    });
+
+    testWidgets('deleting a note re-syncs the phone so its reminder goes (S15)', (tester) async {
+      final backend = FakeBackend()..on('DELETE /notes/n1', (_) => Reply(204));
+      final existing = Note.fromJson(note('n1', 'Refill', {'frequency': 'DAILY', 'time': '09:00'}));
+      final app = await pumpScreen(tester, backend, NoteEditScreen(note: existing));
+      await tester.tap(find.byTooltip('Delete note'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+      await tester.pumpAndSettle();
+      expect(app.reminders.syncs, 1);
     });
 
     testWidgets('edits and deletes an existing note after confirmation', (tester) async {

@@ -13,7 +13,7 @@ One user: an adult managing their own minor illnesses and health papers.
 ## Core journey
 1. Upload a prescription (photo or PDF).
 2. AI extracts medicines, doses, dates, condition and the prescriber's details (name, phone, registration number, specialty, availability when printed).
-3. User reviews and corrects the result, including the dose schedule per medicine: slots (morning, noon, evening, night), before or after food, doses per day and course length. Only confirmed data is saved.
+3. User reviews and corrects the result, including the dose schedule per medicine: time of day (morning, lunch, dinner, each with a default time the user can change), before or after food, doses per day and course length. Only confirmed data is saved.
 4. Confirmed data appears on a timeline of conditions and medicines, and reminders are set from the confirmed schedule.
 5. A "Today" list shows the doses due. The user gets a reminder at each slot, a follow-up if the dose is not marked, and taps taken or skipped.
 

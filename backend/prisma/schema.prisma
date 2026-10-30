@@ -216,10 +216,26 @@ model Allergy {
 }
 
 /// Free-text note written by the user (S7). No structure, no medical meaning to the app.
+enum NoteReminderFrequency {
+  ONCE
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
 model Note {
   id        String   @id @default(uuid())
   userId    String
   text      String
+  // Optional reminder on the note (S15). All four null means none. The phone schedules it; the server only stores the choice.
+  reminderFrequency NoteReminderFrequency?
+  reminderTime      String?
+  // 1 (Monday) to 7 (Sunday); weekly only.
+  reminderWeekday   Int?
+  // 1 to 28; monthly only.
+  reminderDay       Int?
+  // "YYYY-MM-DD"; one-time only.
+  reminderDate      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
