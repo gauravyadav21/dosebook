@@ -1,6 +1,6 @@
 # Open items
 
-Everything not done or not verified, in one list. Status on 4 Oct 2026. Update this file as items close.
+Everything not done or not verified, in one list. Status on 4 Oct 2026; deployment, live reading, the device run, the video and the ZIP updated on 31 Oct 2026. Update this file as items close.
 
 ## Must happen before the work counts
 1. **Commit.** Done on 5 Oct 2026 as 12 story-sized commits (see `commit-plan.md`); pushed to GitLab the same night. Before that: nothing was committed. The roadmap submits the full Git history and scores the AI workflow from it. Commit story by story, following `commit-plan.md`.
@@ -21,17 +21,17 @@ From `docs/09-playbook/standing-out.md`. None of these is done yet.
 8. Try the free AI tools on the four standard tasks and record pros, cons and failures per tool: `docs/04-ai/tool-trials.md`. Only the tool used for the build has a sheet so far.
 
 ## Not verified
-- Upload → review → schedule → confirm on a device. Covered by widget tests; the participant uploaded by hand once, the agent could not drive the file picker.
+- Upload → review → schedule → confirm on a device. Done on the Pixel emulator on 30 Oct 2026 through the system file picker; not tried on a real phone.
 - The open Timeline updating right after Confirm on a device. Proven by a widget test; on the emulator only the resume refresh was seen.
-- Reading a prescription photo with the live Gemini service. Mocked tests only.
+- Reading a prescription photo with the live Gemini service: done on 30 and 31 Oct 2026 with the three samples under neutral names, locally and on the demo server. Real handwritten prescriptions not tried.
 - Medicine descriptions: one medicine looked up for real (ibuprofen). No text reviewed by anyone qualified. The dose filter is keyword-based.
-- Notifications arriving at the right time. Only the planning logic is tested.
+- Notifications arriving at the right time: a dose notification fired on time on the emulator on 30 Oct 2026; not tried on a real phone.
 - On a device: password toggle, own-reminder add and edit, feedback chips on a prescription, Call, Share, doctor edit and delete.
 - iOS, a real phone, the web build.
 - Obsidian vault and slide deck were never opened in Obsidian by the agent.
 
 ## Not built
-- Deployment: prepared on 6 Oct 2026 (container, Render blueprint, files in the database, pipeline job for the judges' APK) and tested locally; **not deployed yet**. The participant's steps are in `docs/05-delivery/deployment.md`. The Dockerfile itself has never been built (no Docker on the Mac); Render's build is its first test.
+- Deployment: live since 31 Oct 2026 on Render (web service and free PostgreSQL), state and steps in `docs/05-delivery/deployment.md`. The Dockerfile is built by Render only (no Docker on the Mac).
 - Web app (dropped by decision: judges get an APK); object storage for uploads; a kept signing key.
 - Chat history is not saved between visits to the screen.
 - Password reset, refresh tokens; token in secure storage.
@@ -62,11 +62,11 @@ From `docs/09-playbook/standing-out.md`. None of these is done yet.
 | Item | State |
 |---|---|
 | Product description and problem statement | Written |
-| Live demo link | Not started |
-| ZIP with full Git history | Not possible until there are commits |
+| Live demo link | Live: `https://dosebook.onrender.com` with the release APK; demo login in the submission ZIP, not the repository |
+| ZIP with full Git history | Built from a clean clone; rebuild after the last commit |
 | Technical doc | Written |
 | AI development doc | Written |
 | QA doc | Written |
-| Demo video | Not started |
+| Demo video | Recorded on 30 Oct 2026 (4 min 24 s) |
 | Pre-existing work disclosed | Not written |
-| Secret scan on the final ZIP | Working tree scans clean; final scan pending |
+| Secret scan on the final ZIP | Clean on the 30 Oct ZIP (history and files); repeat on the final one |

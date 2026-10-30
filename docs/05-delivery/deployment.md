@@ -2,27 +2,28 @@
 
 Decision and trade-offs: `docs/02-architecture/adr/0005-demo-hosting.md`. Story: S13.
 
-**State on 6 Oct 2026: prepared and tested locally, not yet deployed.** The accounts and secrets below are the participant's to create. The AI agent never sees them.
+**State on 31 Oct 2026: live** at `https://dosebook.onrender.com`. The database is Render's free PostgreSQL, not Neon: on 30 Oct Render's start step could no longer reach the Neon database (`P1001`), although Neon answered from elsewhere. The accounts and secrets below are the participant's to create. The AI agent never sees them.
 
 ## What runs where
 | Part | Where | From |
 |---|---|---|
 | Backend | Render, free web service `dosebook-api` | `backend/Dockerfile`, described in `render.yaml` |
-| Database | Neon, free PostgreSQL | migrations in `backend/prisma/migrations`, applied at each start |
+| Database | Render, free PostgreSQL, reached by its internal address | migrations in `backend/prisma/migrations`, applied at each start |
 | Uploaded files | The same database, table `DocumentBlob` | `FILE_STORAGE=database` |
 | App for judges | Release APK, artifact of the `demo-apk` pipeline job on `main` | `.gitlab-ci.yml` |
 
 ## Free-plan limits, as read on 6 Oct 2026 (check again before relying on them)
 - Render (render.com/docs/free): 750 free instance hours a month per workspace; a free web service stops after 15 minutes without traffic and takes about one minute to start again; its filesystem is wiped on every redeploy, restart or stop. The page read did not state RAM, CPU, or whether a card is needed; check at sign-up, and stop if a card is asked for.
 - Neon (neon.com/pricing): free plan is permanent, no card; 1 GB storage per project; 100 compute-hours per project a month; compute pauses after 5 idle minutes.
+- Render's free PostgreSQL, used since 31 Oct 2026: its limits were not read again; check render.com/docs/free for how long a free database is kept.
 
 ## Steps (participant)
-1. **Neon.** Create a project (any region near you). Copy the connection string. It must end with `?sslmode=require`. Use the direct string, not the pooled one, so migrations work.
+1. **Database.** Render → New → Postgres, plan Free, in the same region as the web service. Copy its **Internal Database URL**; that is `DATABASE_URL`. (Neon was used first: its direct string, ending in `?sslmode=require`, worked from Render until 30 Oct.)
 2. **A new signing secret.** In Terminal: `openssl rand -hex 32`. Do not reuse the one in `backend/.env`.
-3. **Render.** New → Blueprint → connect the GitLab repository → it reads `render.yaml`. Enter the three values it asks for: `DATABASE_URL` (from step 1), `JWT_SECRET` (from step 2), `GEMINI_API_KEY` (your free key). Apply.
+3. **Render.** New → Blueprint → connect the GitLab repository → it reads `render.yaml`. Enter the three values it asks for: `DATABASE_URL` (from step 1), `JWT_SECRET` (from step 2), `GEMINI_API_KEY` (your free key). Apply. Then, under Environment, add `GEMINI_MODEL` = `gemini-flash-lite-latest` (why: `env-vars.md`).
 4. **Check.** When the deploy finishes, open `https://<your-service>.onrender.com/health`. It should show `{"status":"ok"}`. The first lines of the deploy log should show the migrations being applied.
 5. **Tell the pipeline the address.** GitLab → Settings → CI/CD → Variables → add `API_BASE_URL` = `https://<your-service>.onrender.com` (not masked, not protected; it is an address). Run the pipeline on `main`.
-6. **Get the APK.** Pipeline → job `demo-apk` → Download artifacts → `dosebook-demo.apk`.
+6. **Get the APK.** Pipeline → job `demo-apk` → Download artifacts → `dosebook-demo.apk`. The same APK can be built locally: `cd mobile && flutter build apk --release --dart-define=API_BASE_URL=https://<your-service>.onrender.com --dart-define=DEMO=true`.
 7. **Give judges access.** The project is private, so the artifact needs sign-in. Either make the project public at submission, or attach the APK to a GitLab Release. Also give them the three files in `samples/`.
 
 None of these values go into a chat, a file in the repo, or `render.yaml`.

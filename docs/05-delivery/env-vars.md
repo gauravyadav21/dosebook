@@ -17,8 +17,8 @@ Values never go in the repo. See `backend/.env.example`.
 | `CHAT_THROTTLE_LIMIT` | no | Chat requests per minute per client, default 30 |
 | `UPLOAD_THROTTLE_LIMIT` | no | Uploads per minute per client, default 20 |
 | `GEMINI_API_KEY` | no | Turns on reading prescriptions with Gemini (free tier: fake prescriptions only) and the one-time fetch of a general description for a looked-up medicine |
-| `GEMINI_MODEL` | no | Default `gemini-flash-latest`, Google's alias for its current Flash model |
-| `GEMINI_FALLBACK_MODEL` | no | Default `gemini-flash-lite-latest`. Used when the first model is retired, over its free quota or overloaded |
+| `GEMINI_MODEL` | no | Default `gemini-flash-latest`, Google's alias for its current Flash model. The demo server sets `gemini-flash-lite-latest`: on 30 Oct 2026 a new key could not use the 2.5 models and the Flash alias did not answer, while Flash-Lite answered in 2 to 7 seconds |
+| `GEMINI_FALLBACK_MODEL` | no | Default `gemini-flash-lite-latest`. Used when the first model is retired, over its free quota, overloaded, or does not answer within 10 seconds |
 | `TEST_DATABASE_URL` | no | Database for end-to-end tests. Defaults to the local one from `scripts/dev-db.sh` |
 
 ## Mobile
